@@ -1,0 +1,4 @@
+name = "shopware-app-server"
+main = "src/index.ts"
+workers_dev = true
+compatibility_date = "2023-05-07"

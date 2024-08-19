@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@shopware-ag/app-server": "jsr:@shopware-ag/app-server@^0.0.55",
+    "hono": "jsr:@hono/hono@^4.4.7"
+  }
+}

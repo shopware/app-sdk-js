@@ -1,0 +1,122 @@
+{
+  "name": "@shopware-ag/app-server",
+  "version": "0.1.0",
+  "description": "The Meteor SDK for the Shopware Administration.",
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "deno": {
+        "types": "./dist/deno/mod.d.ts",
+        "default": "./dist/deno/mod.js"
+      },
+      "import": {
+        "types": "./dist/esm/mod.d.ts",
+        "default": "./dist/esm/mod.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/mod.d.ts",
+        "default": "./dist/commonjs/mod.js"
+      }
+    },
+    "./service/cloudflare-workers": {
+      "deno": {
+        "types": "./dist/deno/service/cloudflare.d.ts",
+        "default": "./dist/deno/service/cloudflare.js"
+      },
+      "import": {
+        "types": "./dist/esm/service/cloudflare.d.ts",
+        "default": "./dist/esm/service/cloudflare.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/service/cloudflare.d.ts",
+        "default": "./dist/commonjs/service/cloudflare.js"
+      }
+    },
+    "./service/deno": {
+      "deno": {
+        "types": "./dist/deno/service/deno.d.ts",
+        "default": "./dist/deno/service/deno.js"
+      },
+      "import": {
+        "types": "./dist/esm/service/deno.d.ts",
+        "default": "./dist/esm/service/deno.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/service/deno.d.ts",
+        "default": "./dist/commonjs/service/deno.js"
+      }
+    },
+    "./framework/express": {
+      "deno": {
+        "types": "./dist/deno/framework/express.d.ts",
+        "default": "./dist/deno/framework/express.js"
+      },
+      "import": {
+        "types": "./dist/esm/framework/express.d.ts",
+        "default": "./dist/esm/framework/express.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/framework/express.d.ts",
+        "default": "./dist/commonjs/framework/express.js"
+      }
+    },
+    "./framework/hono": {
+      "deno": {
+        "types": "./dist/deno/framework/hono.d.ts",
+        "default": "./dist/deno/framework/hono.js"
+      },
+      "import": {
+        "types": "./dist/esm/framework/hono.d.ts",
+        "default": "./dist/esm/framework/hono.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/framework/hono.d.ts",
+        "default": "./dist/commonjs/framework/hono.js"
+      }
+    },
+    "./helper/app-actions": {
+      "deno": {
+        "types": "./dist/deno/helper/app-actions.d.ts",
+        "default": "./dist/deno/helper/app-actions.js"
+      },
+      "import": {
+        "types": "./dist/esm/helper/app-actions.d.ts",
+        "default": "./dist/esm/helper/app-actions.js"
+      },
+      "require": {
+        "types": "./dist/commonjs/helper/app-actions.d.ts",
+        "default": "./dist/commonjs/helper/app-actions.js"
+      }
+    }
+  },
+  "main": "./dist/commonjs/mod.js",
+  "module": "./dist/esm/mod.js",
+  "types": "./dist/commonjs/mod.d.ts",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "1.8.3",
+    "@types/bun": "^1.1.6",
+    "tshy": "^3.0.2",
+    "hono": "^4.5.6"
+  },
+  "tshy": {
+    "esmDialects": [
+      "deno"
+    ],
+    "exports": {
+      "./package.json": "./package.json",
+      ".": "./src/mod.ts",
+      "./service/cloudflare-workers": "./src/service/cloudflare.ts",
+      "./service/deno": "./src/service/deno.ts",
+      "./framework/express": "./src/framework/express.ts",
+      "./framework/hono": "./src/framework/hono.ts",
+      "./helper/app-actions": "./src/helper/app-actions.ts"
+    }
+  },
+  "trustedDependencies": [
+    "@biomejs/biome"
+  ]
+}
