@@ -61,7 +61,7 @@ export class Registration {
 	 */
 	public async authorizeCallback(req: Request): Promise<Response> {
 		const bodyContent = await req.text();
-		
+
 		const body = JSON.parse(bodyContent);
 
 		if (

@@ -189,7 +189,9 @@ export class ApiClientAuthenticationFailed extends Error {
 		shopId: string,
 		public response: HttpClientResponse,
 	) {
-		super(`The api client authentication to shop with id: ${shopId} with response: ${JSON.stringify(response.body)}`);
+		super(
+			`The api client authentication to shop with id: ${shopId} with response: ${JSON.stringify(response.body)}`,
+		);
 	}
 }
 
