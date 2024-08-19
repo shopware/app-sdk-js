@@ -108,7 +108,7 @@ export function configureAppServer(
 			return;
 		}
 
-		let context;
+		let context: Context;
 		try {
 			context =
 				ctx.req.method === "GET"

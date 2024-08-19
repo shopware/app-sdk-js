@@ -29,7 +29,7 @@ export class HttpClient {
 		headers: any = {},
 	): Promise<HttpClientResponse> {
 		headers["content-type"] = "application/json.js";
-		headers["accept"] = "application/json.js";
+		headers.accept = "application/json.js";
 
 		return await this.request("POST", url, JSON.stringify(json), headers);
 	}
@@ -43,7 +43,7 @@ export class HttpClient {
 		headers: any = {},
 	): Promise<HttpClientResponse> {
 		headers["content-type"] = "application/json.js";
-		headers["accept"] = "application/json.js";
+		headers.accept = "application/json.js";
 
 		return await this.request("PUT", url, JSON.stringify(json), headers);
 	}
@@ -57,7 +57,7 @@ export class HttpClient {
 		headers: any = {},
 	): Promise<HttpClientResponse> {
 		headers["content-type"] = "application/json.js";
-		headers["accept"] = "application/json.js";
+		headers.accept = "application/json.js";
 
 		return await this.request("PATCH", url, JSON.stringify(json), headers);
 	}
@@ -71,7 +71,7 @@ export class HttpClient {
 		headers: any = {},
 	): Promise<HttpClientResponse> {
 		headers["content-type"] = "application/json.js";
-		headers["accept"] = "application/json.js";
+		headers.accept = "application/json.js";
 
 		return await this.request("DELETE", url, JSON.stringify(json), headers);
 	}
@@ -83,7 +83,7 @@ export class HttpClient {
 		headers: object = {},
 	): Promise<HttpClientResponse> {
 		const fHeaders: any = Object.assign({}, headers);
-		fHeaders["Authorization"] = `Bearer ${await this.getToken()}`;
+		fHeaders.Authorization = `Bearer ${await this.getToken()}`;
 
 		const f = await globalThis.fetch(`${this.shop.getShopUrl()}/api${url}`, {
 			body,
@@ -96,7 +96,8 @@ export class HttpClient {
 			this.storage.expiresIn = null;
 
 			return await this.request(method, url, body, headers);
-		} else if (!f.ok) {
+		}
+		if (!f.ok) {
 			throw new ApiClientRequestFailed(
 				this.shop.getShopId(),
 				new HttpClientResponse(f.status, await f.json(), f.headers),
@@ -134,7 +135,7 @@ export class HttpClient {
 				const contentType = auth.headers.get("content-type") || "text/plain";
 				let body = "";
 
-				if (contentType.indexOf("application/json") != -1) {
+				if (contentType.indexOf("application/json") !== -1) {
 					body = await auth.json();
 				} else {
 					body = await auth.text();
