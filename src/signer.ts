@@ -78,7 +78,7 @@ export class WebCryptoHmacSigner {
 
 	buf2hex(buf: ArrayBuffer): string {
 		return Array.prototype.map
-			.call(new Uint8Array(buf), (x) => ("00" + x.toString(16)).slice(-2))
+			.call(new Uint8Array(buf), (x) => `00${x.toString(16)}`.slice(-2))
 			.join("");
 	}
 }

@@ -61,7 +61,7 @@ export class Registration {
 	 */
 	public async authorizeCallback(req: Request): Promise<Response> {
 		const bodyContent = await req.text();
-		
+
 		const body = JSON.parse(bodyContent);
 
 		if (
@@ -104,7 +104,7 @@ export function randomString(length = 120) {
 	const characters =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 	const charactersLength = characters.length;
-	for (var i = 0; i < length; i++) {
+	for (let i = 0; i < length; i++) {
 		result += characters.charAt(Math.floor(Math.random() * charactersLength));
 	}
 

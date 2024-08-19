@@ -55,10 +55,7 @@ export function convertRequest(expressRequest: ExpressRequest): Request {
 	}
 
 	return new Request(
-		expressRequest.protocol +
-			"://" +
-			expressRequest.get("host") +
-			expressRequest.originalUrl,
+		`${expressRequest.protocol}://${expressRequest.get("host")}${expressRequest.originalUrl}`,
 		options,
 	);
 }
@@ -72,11 +69,12 @@ export function rawRequestMiddleware(
 	res: ExpressResponse,
 	next: Function,
 ): void {
-	const contentType = (req.headers["content-type"] as string) || "",
-		mime = contentType.split(";")[0];
+	const contentType = (req.headers["content-type"] as string) || "";
+	const mime = contentType.split(";")[0];
 
-	if (mime != "application/json") {
-		return next();
+	if (mime !== "application/json") {
+		next();
+		return;
 	}
 
 	let data = "";

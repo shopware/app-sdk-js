@@ -108,14 +108,14 @@ export function configureAppServer(
 			return;
 		}
 
-		let context;
+		let context: Context;
 		try {
 			context =
 				ctx.req.method === "GET"
 					? await app.contextResolver.fromModule(ctx.req.raw)
 					: await app.contextResolver.fromSource(ctx.req.raw);
 		} catch (_e) {
-			return jsonResponse({ message: "Invalid request", }, 400);
+			return jsonResponse({ message: "Invalid request" }, 400);
 		}
 
 		ctx.set("shop", context.shop);

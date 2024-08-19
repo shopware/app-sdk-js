@@ -1,7 +1,7 @@
-import { Registration } from "./registration.js";
-import { WebCryptoHmacSigner } from "./signer.js";
-import type { ShopRepositoryInterface } from "./repository.js";
 import { ContextResolver } from "./context-resolver.js";
+import { Registration } from "./registration.js";
+import type { ShopRepositoryInterface } from "./repository.js";
+import { WebCryptoHmacSigner } from "./signer.js";
 
 /**
  * AppServer is the main class, this is where you start your app
