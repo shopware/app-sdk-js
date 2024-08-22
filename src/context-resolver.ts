@@ -12,7 +12,9 @@ export class ContextResolver {
 	/**
 	 * Create a context from a request body
 	 */
-	public async fromSource(req: Request): Promise<Context> {
+	public async fromAPI<Payload = unknown>(
+		req: Request,
+	): Promise<Context<Payload>> {
 		const webHookContent = await req.text();
 		const webHookBody = JSON.parse(webHookContent);
 
@@ -40,14 +42,16 @@ export class ContextResolver {
 			throw new Error("Invalid signature");
 		}
 
-		return new Context(shop, webHookBody, new HttpClient(shop));
+		return new Context<Payload>(shop, webHookBody, new HttpClient(shop));
 	}
 
 	/**
 	 * Create a context from a request query parameters
 	 * This is usually a module request from the shopware admin
 	 */
-	public async fromModule(req: Request): Promise<Context> {
+	public async fromBrowser<Payload = unknown>(
+		req: Request,
+	): Promise<Context<Payload>> {
 		const url = new URL(req.url);
 
 		const shopId = url.searchParams.get("shop-id");
@@ -70,17 +74,21 @@ export class ContextResolver {
 			paramsObject[key] = value;
 		});
 
-		return new Context(shop, paramsObject, new HttpClient(shop));
+		return new Context<Payload>(
+			shop,
+			paramsObject as Payload,
+			new HttpClient(shop),
+		);
 	}
 }
 
 /**
  * Context is the parsed data from the request
  */
-export class Context {
+export class Context<Payload = unknown> {
 	constructor(
 		public shop: ShopInterface,
-		public payload: any,
+		public payload: Payload,
 		public httpClient: HttpClient,
 	) {}
 }

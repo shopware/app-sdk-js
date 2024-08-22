@@ -17,9 +17,9 @@ describe("Context Resolver", async () => {
 
 	const contextResolver = new ContextResolver(app);
 
-	test("fromModule: shop does not exist", async () => {
+	test("fromBrowser: shop does not exist", async () => {
 		expect(
-			contextResolver.fromModule(
+			contextResolver.fromBrowser(
 				new Request(
 					"https://example.com/?shop-id=test&shopware-shop-signature=aaa",
 				),
@@ -27,18 +27,18 @@ describe("Context Resolver", async () => {
 		).rejects.toThrowError("Cannot find shop by id test");
 	});
 
-	test("fromModule: missing header", async () => {
+	test("fromBrowser: missing header", async () => {
 		expect(
-			contextResolver.fromModule(
+			contextResolver.fromBrowser(
 				new Request("https://example.com/?shop-id=blaa"),
 			),
 		).rejects.toThrowError("Missing shopware-shop-signature query parameter");
 	});
 
-	test("fromModule: shop exists", async () => {
+	test("fromBrowser: shop exists", async () => {
 		app.signer.verifyGetRequest = jest.fn().mockResolvedValue(true);
 
-		const context = await contextResolver.fromModule(
+		const context = await contextResolver.fromBrowser(
 			new Request(
 				"https://example.com/?shop-id=blaa&shopware-shop-signature=aaa",
 			),
@@ -52,7 +52,7 @@ describe("Context Resolver", async () => {
 
 	test("fromSource: missing signature header", async () => {
 		expect(
-			contextResolver.fromSource(
+			contextResolver.fromAPI(
 				new Request("https://example.com/", {
 					body: JSON.stringify({
 						source: {
@@ -66,7 +66,7 @@ describe("Context Resolver", async () => {
 
 	test("fromSource: shop does not exists", async () => {
 		expect(
-			contextResolver.fromSource(
+			contextResolver.fromAPI(
 				new Request("https://example.com/", {
 					headers: {
 						"shopware-shop-signature": "aaa",
@@ -83,7 +83,7 @@ describe("Context Resolver", async () => {
 
 	test("fromSource: invalid signature", async () => {
 		expect(
-			contextResolver.fromSource(
+			contextResolver.fromAPI(
 				new Request("https://example.com/", {
 					headers: {
 						"shopware-shop-signature": "aaa",
@@ -101,7 +101,7 @@ describe("Context Resolver", async () => {
 	test("fromSource: resolved", async () => {
 		app.signer.verify = jest.fn().mockResolvedValue(true);
 
-		const ctx = await contextResolver.fromSource(
+		const ctx = await contextResolver.fromAPI(
 			new Request("https://example.com/", {
 				headers: {
 					"shopware-shop-signature": "aaa",

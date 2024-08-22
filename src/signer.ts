@@ -24,7 +24,13 @@ export class WebCryptoHmacSigner {
 
 		url.searchParams.delete("shopware-shop-signature");
 
-		const body = url.searchParams.toString();
+		let body = "";
+
+		for (const searchKey of url.searchParams.keys()) {
+			body += `${searchKey}=${decodeURIComponent(url.searchParams.get(searchKey) as string)}&`;
+		}
+
+		body = body.slice(0, -1);
 
 		if (body === "") {
 			throw new Error("Missing query parameters to verify the GET request");
