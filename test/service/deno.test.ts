@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { SimpleShop } from "../../src/repository.js";
 import { DenoKVRepository } from "../../src/service/deno.js";
 
 describe("Deno", async () => {
@@ -37,7 +38,7 @@ describe("Deno", async () => {
 	test("test repository", async () => {
 		const repo = new DenoKVRepository();
 
-		await repo.createShop(repo.createShopStruct("test", "test", "test"));
+		await repo.createShop("test", "test", "test");
 
 		const shop = await repo.getShopById("test");
 
@@ -51,7 +52,7 @@ describe("Deno", async () => {
 
 		expect(repo.getShopById("test")).resolves.toBeNull();
 
-		await repo.updateShop(repo.createShopStruct("test", "test", "test"));
+		await repo.updateShop(new SimpleShop("test", "test", "test"));
 
 		expect(repo.getShopById("test")).resolves.not.toBeNull();
 	});

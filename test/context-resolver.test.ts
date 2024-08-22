@@ -13,7 +13,7 @@ describe("Context Resolver", async () => {
 		new InMemoryShopRepository(),
 	);
 
-	await app.repository.createShop(new SimpleShop("blaa", "test", "test"));
+	await app.repository.createShop("blaa", "test", "test");
 
 	const contextResolver = new ContextResolver(app);
 

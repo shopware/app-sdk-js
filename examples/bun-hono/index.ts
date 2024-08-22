@@ -1,7 +1,12 @@
 import { Hono } from "hono";
 import { configureAppServer } from "@shopware-ag/app-server/framework/hono";
-import { BunSQliteRepository } from "./repository.js";
-import { AppServer, ShopInterface, Context } from "@shopware-ag/app-server";
+import { BunSqliteRepository } from "./repository.js";
+import {
+  AppServer,
+  ShopInterface,
+  Context,
+  SimpleShop,
+} from "@shopware-ag/app-server";
 import {
   ActionButtonRequest,
   BrowserAppModuleRequest,
@@ -13,7 +18,7 @@ const app = new Hono();
 configureAppServer(app, {
   appName: "MyApp",
   appSecret: "my-secret",
-  shopRepository: new BunSQliteRepository(),
+  shopRepository: new BunSqliteRepository(),
 });
 
 declare module "hono" {
@@ -25,7 +30,7 @@ declare module "hono" {
 }
 
 app.get("/app/browser", (c) => {
-  const ctx = c.get("context") as Context<BrowserAppModuleRequest>;
+  const ctx = c.get("context") as Context<SimpleShop, BrowserAppModuleRequest>;
 
   console.log(`Got request from ${ctx.payload["shop-id"]}`);
 
@@ -35,7 +40,7 @@ app.get("/app/browser", (c) => {
 });
 
 app.post("/app/action-button", (c) => {
-  const ctx = c.get("context") as Context<ActionButtonRequest>;
+  const ctx = c.get("context") as Context<SimpleShop, ActionButtonRequest>;
 
   return createNotificationResponse("success", "yeeaa");
 });

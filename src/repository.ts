@@ -14,18 +14,12 @@ export interface ShopInterface {
  * ShopRepositoryInterface is the storage interface for the shops, you should implement this to save the shop data to your database
  * For testing cases the InMemoryShopRepository can be used
  */
-export interface ShopRepositoryInterface {
-	createShopStruct(
-		shopId: string,
-		shopUrl: string,
-		shopSecret: string,
-	): ShopInterface;
+export interface ShopRepositoryInterface<Shop = ShopInterface> {
+	createShop(id: string, url: string, secret: string): Promise<void>;
 
-	createShop(shop: ShopInterface): Promise<void>;
+	getShopById(id: string): Promise<Shop | null>;
 
-	getShopById(id: string): Promise<ShopInterface | null>;
-
-	updateShop(shop: ShopInterface): Promise<void>;
+	updateShop(shop: Shop): Promise<void>;
 
 	deleteShop(id: string): Promise<void>;
 }
@@ -39,6 +33,8 @@ export class SimpleShop implements ShopInterface {
 	private shopSecret: string;
 	private shopClientId: string | null;
 	private shopClientSecret: string | null;
+
+	yes() {}
 
 	constructor(shopId: string, shopUrl: string, shopSecret: string) {
 		this.shopId = shopId;
@@ -72,35 +68,31 @@ export class SimpleShop implements ShopInterface {
 /**
  * InMemoryShopRepository is a simple implementation of the ShopRepositoryInterface, it stores the shop data in memory
  */
-export class InMemoryShopRepository implements ShopRepositoryInterface {
-	private storage: Map<string, ShopInterface>;
+export class InMemoryShopRepository
+	implements ShopRepositoryInterface<SimpleShop>
+{
+	private storage: Map<string, SimpleShop>;
 
 	constructor() {
-		this.storage = new Map<string, ShopInterface>();
+		this.storage = new Map<string, SimpleShop>();
 	}
 
-	createShopStruct(
-		shopId: string,
-		shopUrl: string,
-		shopSecret: string,
-	): ShopInterface {
-		return new SimpleShop(shopId, shopUrl, shopSecret);
+	async createShop(id: string, secret: string, url: string) {
+		this.storage.set(id, new SimpleShop(id, url, secret));
 	}
 
-	async createShop(shop: ShopInterface) {
-		this.storage.set(shop.getShopId(), shop);
-	}
+	async getShopById(id: string): Promise<SimpleShop | null> {
+		const shop = this.storage.get(id);
 
-	async getShopById(id: string): Promise<ShopInterface | null> {
-		if (this.storage.has(id)) {
-			return this.storage.get(id) as ShopInterface;
+		if (shop === undefined) {
+			return null;
 		}
 
-		return null;
+		return shop;
 	}
 
-	async updateShop(shop: ShopInterface) {
-		await this.createShop(shop);
+	async updateShop(shop: SimpleShop) {
+		this.storage.set(shop.getShopId(), shop);
 	}
 
 	async deleteShop(id: string) {

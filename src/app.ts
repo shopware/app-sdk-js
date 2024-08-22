@@ -1,19 +1,19 @@
 import { ContextResolver } from "./context-resolver.js";
 import { Registration } from "./registration.js";
-import type { ShopRepositoryInterface } from "./repository.js";
+import type { ShopInterface, ShopRepositoryInterface } from "./repository.js";
 import { WebCryptoHmacSigner } from "./signer.js";
 
 /**
  * AppServer is the main class, this is where you start your app
  */
-export class AppServer {
+export class AppServer<Shop extends ShopInterface = ShopInterface> {
 	public registration: Registration;
-	public contextResolver: ContextResolver;
+	public contextResolver: ContextResolver<Shop>;
 	public signer: WebCryptoHmacSigner;
 
 	constructor(
 		public cfg: Configuration,
-		public repository: ShopRepositoryInterface,
+		public repository: ShopRepositoryInterface<Shop>,
 	) {
 		this.registration = new Registration(this);
 		this.contextResolver = new ContextResolver(this);

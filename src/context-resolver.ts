@@ -6,7 +6,7 @@ import type { ShopInterface } from "./repository.js";
  * ContextResolver is a helper class to create a Context object from a request.
  * The context contains the shop, the payload and an instance of the HttpClient
  */
-export class ContextResolver {
+export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
 	constructor(private app: AppServer) {}
 
 	/**
@@ -14,7 +14,7 @@ export class ContextResolver {
 	 */
 	public async fromAPI<Payload = unknown>(
 		req: Request,
-	): Promise<Context<Payload>> {
+	): Promise<Context<Shop, Payload>> {
 		const webHookContent = await req.text();
 		const webHookBody = JSON.parse(webHookContent);
 
@@ -42,7 +42,11 @@ export class ContextResolver {
 			throw new Error("Invalid signature");
 		}
 
-		return new Context<Payload>(shop, webHookBody, new HttpClient(shop));
+		return new Context<Shop, Payload>(
+			shop as Shop,
+			webHookBody,
+			new HttpClient(shop),
+		);
 	}
 
 	/**
@@ -51,7 +55,7 @@ export class ContextResolver {
 	 */
 	public async fromBrowser<Payload = unknown>(
 		req: Request,
-	): Promise<Context<Payload>> {
+	): Promise<Context<Shop, Payload>> {
 		const url = new URL(req.url);
 
 		const shopId = url.searchParams.get("shop-id");
@@ -74,8 +78,8 @@ export class ContextResolver {
 			paramsObject[key] = value;
 		});
 
-		return new Context<Payload>(
-			shop,
+		return new Context<Shop, Payload>(
+			shop as Shop,
 			paramsObject as Payload,
 			new HttpClient(shop),
 		);
@@ -85,9 +89,12 @@ export class ContextResolver {
 /**
  * Context is the parsed data from the request
  */
-export class Context<Payload = unknown> {
+export class Context<
+	Shop extends ShopInterface = ShopInterface,
+	Payload = unknown,
+> {
 	constructor(
-		public shop: ShopInterface,
+		public shop: Shop,
 		public payload: Payload,
 		public httpClient: HttpClient,
 	) {}

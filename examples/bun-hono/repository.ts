@@ -6,7 +6,9 @@ import {
 
 import { Database } from "bun:sqlite";
 
-export class BunSQliteRepository implements ShopRepositoryInterface {
+export class BunSqliteRepository
+  implements ShopRepositoryInterface<SimpleShop>
+{
   db: Database;
   constructor() {
     this.db = new Database("shop.db");
@@ -21,30 +23,21 @@ export class BunSQliteRepository implements ShopRepositoryInterface {
     `);
   }
 
-  createShopStruct(
-    shopId: string,
-    shopUrl: string,
-    shopSecret: string,
-  ): ShopInterface {
-    return new SimpleShop(shopId, shopUrl, shopSecret);
-  }
-  async createShop(shop: ShopInterface): Promise<void> {
-    if ((await this.getShopById(shop.getShopId())) !== null) {
+  async createShop(id: string, url: string, secret: string): Promise<void> {
+    const shop = await this.getShopById(id);
+
+    if (shop) {
       return await this.updateShop(shop);
     }
 
-    this.db.exec(
-      `INSERT INTO shop (id, url, secret, client_id, client_secret) VALUES (?, ?, ?, ?, ?)`,
-      [
-        shop.getShopId(),
-        shop.getShopUrl(),
-        shop.getShopSecret(),
-        shop.getShopClientId(),
-        shop.getShopClientSecret(),
-      ],
-    );
+    this.db.exec(`INSERT INTO shop (id, url, secret) VALUES (?, ?, ?)`, [
+      id,
+      url,
+      secret,
+    ]);
   }
-  async getShopById(id: string): Promise<ShopInterface | null> {
+
+  async getShopById(id: string): Promise<SimpleShop | null> {
     const query = this.db.query<
       {
         id: string;
@@ -69,7 +62,7 @@ export class BunSQliteRepository implements ShopRepositoryInterface {
 
     return shop;
   }
-  async updateShop(shop: ShopInterface): Promise<void> {
+  async updateShop(shop: SimpleShop): Promise<void> {
     this.db.exec(
       `UPDATE shop SET url = ?, secret = ?, client_id = ?, client_secret = ? WHERE id = ?`,
       [

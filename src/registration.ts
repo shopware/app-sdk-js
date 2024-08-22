@@ -30,21 +30,19 @@ export class Registration {
 			return new InvalidRequestResponse("Cannot validate app signature");
 		}
 
-		const shop = this.app.repository.createShopStruct(
-			url.searchParams.get("shop-id") as string,
-			url.searchParams.get("shop-url") as string,
-			randomString(),
-		);
+		const shopId = url.searchParams.get("shop-id") as string;
+		const shopUrl = url.searchParams.get("shop-url") as string;
+		const shopSecret = randomString();
 
-		await this.app.repository.createShop(shop);
+		await this.app.repository.createShop(shopId, shopUrl, shopSecret);
 
 		return new Response(
 			JSON.stringify({
 				proof: await this.app.signer.sign(
-					shop.getShopId() + shop.getShopUrl() + this.app.cfg.appName,
+					shopId + shopUrl + this.app.cfg.appName,
 					this.app.cfg.appSecret,
 				),
-				secret: shop.getShopSecret(),
+				secret: shopSecret,
 				confirmation_url: this.app.cfg.authorizeCallbackUrl,
 			}),
 			{

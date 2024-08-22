@@ -16,7 +16,7 @@ interface MiddlewareConfig {
 
 interface DataTypes {
 	app: AppServer;
-	context: Context<unknown>;
+	context: Context<ShopInterface, unknown>;
 	shop: ShopInterface;
 }
 
@@ -108,7 +108,7 @@ export function configureAppServer(
 			return;
 		}
 
-		let context: Context<unknown>;
+		let context: Context<ShopInterface, unknown>;
 		try {
 			context =
 				ctx.req.method === "GET"

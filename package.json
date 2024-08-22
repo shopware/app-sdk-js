@@ -114,6 +114,11 @@
 		"tshy": "^3.0.2",
 		"hono": "^4.5.6"
 	},
+	"scripts": {
+		"typecheck": "bunx tsc --noEmit",
+		"lint": "bunx @biomejs/biome ci .",
+		"lint:fix": "bunx @biomejs/biome lint . --write && bunx @biomejs/biome format . --write && bunx @biomejs/biome check . --write"
+	},
 	"tshy": {
 		"esmDialects": ["deno"],
 		"exports": {
