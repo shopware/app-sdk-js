@@ -99,7 +99,7 @@ describe("Express", async () => {
 				return "localhost";
 			},
 			setEncoding(encoding: string) {},
-			on(event: string, callback: () => void) {
+			on(event: string, callback: Function) {
 				called++;
 			},
 			originalUrl: "/test",

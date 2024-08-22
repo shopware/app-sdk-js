@@ -25,7 +25,7 @@ const server = Bun.serve({
             // sign the response, with the shop secret
             await app.signer.signResponse(notification, context.shop.getShopSecret());
 
-            return resp;
+            return notification;
         }
 
         return new Response('Not found', { status: 404 });
