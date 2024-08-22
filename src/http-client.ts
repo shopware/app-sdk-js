@@ -16,20 +16,23 @@ export class HttpClient {
 	/**
 	 * Permform a GET request
 	 */
-	async get(url: string, headers: object = {}): Promise<HttpClientResponse> {
+	async get<ResponseType>(
+		url: string,
+		headers: Record<string, string> = {},
+	): Promise<HttpClientResponse<ResponseType>> {
 		return await this.request("GET", url, null, headers);
 	}
 
 	/**
 	 * Permform a POST request
 	 */
-	async post(
+	async post<ResponseType>(
 		url: string,
 		json: object = {},
-		headers: any = {},
-	): Promise<HttpClientResponse> {
-		headers["content-type"] = "application/json.js";
-		headers.accept = "application/json.js";
+		headers: Record<string, string> = {},
+	): Promise<HttpClientResponse<ResponseType>> {
+		headers["content-type"] = "application/json";
+		headers.accept = "application/json";
 
 		return await this.request("POST", url, JSON.stringify(json), headers);
 	}
@@ -37,13 +40,13 @@ export class HttpClient {
 	/**
 	 * Permform a PUT request
 	 */
-	async put(
+	async put<ResponseType>(
 		url: string,
 		json: object = {},
-		headers: any = {},
-	): Promise<HttpClientResponse> {
-		headers["content-type"] = "application/json.js";
-		headers.accept = "application/json.js";
+		headers: Record<string, string> = {},
+	): Promise<HttpClientResponse<ResponseType>> {
+		headers["content-type"] = "application/json";
+		headers.accept = "application/json";
 
 		return await this.request("PUT", url, JSON.stringify(json), headers);
 	}
@@ -51,13 +54,13 @@ export class HttpClient {
 	/**
 	 * Permform a PATCH request
 	 */
-	async patch(
+	async patch<ResponseType>(
 		url: string,
 		json: object = {},
-		headers: any = {},
-	): Promise<HttpClientResponse> {
-		headers["content-type"] = "application/json.js";
-		headers.accept = "application/json.js";
+		headers: Record<string, string> = {},
+	): Promise<HttpClientResponse<ResponseType>> {
+		headers["content-type"] = "application/json";
+		headers.accept = "application/json";
 
 		return await this.request("PATCH", url, JSON.stringify(json), headers);
 	}
@@ -65,29 +68,31 @@ export class HttpClient {
 	/**
 	 * Permform a DELETE request
 	 */
-	async delete(
+	async delete<ResponseType>(
 		url: string,
 		json: object = {},
-		headers: any = {},
-	): Promise<HttpClientResponse> {
-		headers["content-type"] = "application/json.js";
-		headers.accept = "application/json.js";
+		headers: Record<string, string> = {},
+	): Promise<HttpClientResponse<ResponseType>> {
+		headers["content-type"] = "application/json";
+		headers.accept = "application/json";
 
 		return await this.request("DELETE", url, JSON.stringify(json), headers);
 	}
 
-	private async request(
+	private async request<ResponseType>(
 		method: string,
 		url: string,
 		body: string | null = "",
-		headers: object = {},
-	): Promise<HttpClientResponse> {
-		const fHeaders: any = Object.assign({}, headers);
-		fHeaders.Authorization = `Bearer ${await this.getToken()}`;
-
+		headers: Record<string, string> = {},
+	): Promise<HttpClientResponse<ResponseType>> {
 		const f = await globalThis.fetch(`${this.shop.getShopUrl()}/api${url}`, {
 			body,
-			headers: fHeaders,
+			headers: Object.assign(
+				{
+					Authorization: `Bearer ${await this.getToken()}`,
+				},
+				headers,
+			),
 			method,
 		});
 
@@ -105,7 +110,11 @@ export class HttpClient {
 		}
 
 		if (f.status === 204) {
-			return new HttpClientResponse(f.status, {}, f.headers);
+			return new HttpClientResponse<ResponseType>(
+				f.status,
+				{} as ResponseType,
+				f.headers,
+			);
 		}
 
 		return new HttpClientResponse(f.status, await f.json(), f.headers);
@@ -143,7 +152,7 @@ export class HttpClient {
 
 				throw new ApiClientAuthenticationFailed(
 					this.shop.getShopId(),
-					new HttpClientResponse(auth.status, body, auth.headers),
+					new HttpClientResponse<string>(auth.status, body, auth.headers),
 				);
 			}
 
@@ -174,13 +183,22 @@ export class HttpClient {
 /**
  * HttpClientResponse is the response object of the HttpClient
  */
-export class HttpClientResponse {
+export class HttpClientResponse<ResponseType> {
 	constructor(
 		public statusCode: number,
-		public body: any,
+		public body: ResponseType,
 		public headers: Headers,
 	) {}
 }
+
+type ShopwareErrorResponse = {
+	errors: {
+		code: string;
+		status: string;
+		title: string;
+		detail: string;
+	}[];
+};
 
 /**
  * ApiClientAuthenticationFailed is thrown when the authentication to the shop's API fails
@@ -188,7 +206,7 @@ export class HttpClientResponse {
 export class ApiClientAuthenticationFailed extends Error {
 	constructor(
 		shopId: string,
-		public response: HttpClientResponse,
+		public response: HttpClientResponse<string>,
 	) {
 		super(
 			`The api client authentication to shop with id: ${shopId} with response: ${JSON.stringify(response.body)}`,
@@ -202,7 +220,7 @@ export class ApiClientAuthenticationFailed extends Error {
 export class ApiClientRequestFailed extends Error {
 	constructor(
 		shopId: string,
-		public response: HttpClientResponse,
+		public response: HttpClientResponse<ShopwareErrorResponse>,
 	) {
 		super(
 			`The api request failed with status code: ${response.statusCode} for shop with id: ${shopId}`,

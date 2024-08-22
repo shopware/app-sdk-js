@@ -6,13 +6,15 @@ import type { ShopInterface } from "./repository.js";
  * ContextResolver is a helper class to create a Context object from a request.
  * The context contains the shop, the payload and an instance of the HttpClient
  */
-export class ContextResolver {
+export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
 	constructor(private app: AppServer) {}
 
 	/**
 	 * Create a context from a request body
 	 */
-	public async fromSource(req: Request): Promise<Context> {
+	public async fromAPI<Payload = unknown>(
+		req: Request,
+	): Promise<Context<Shop, Payload>> {
 		const webHookContent = await req.text();
 		const webHookBody = JSON.parse(webHookContent);
 
@@ -40,14 +42,20 @@ export class ContextResolver {
 			throw new Error("Invalid signature");
 		}
 
-		return new Context(shop, webHookBody, new HttpClient(shop));
+		return new Context<Shop, Payload>(
+			shop as Shop,
+			webHookBody,
+			new HttpClient(shop),
+		);
 	}
 
 	/**
 	 * Create a context from a request query parameters
 	 * This is usually a module request from the shopware admin
 	 */
-	public async fromModule(req: Request): Promise<Context> {
+	public async fromBrowser<Payload = unknown>(
+		req: Request,
+	): Promise<Context<Shop, Payload>> {
 		const url = new URL(req.url);
 
 		const shopId = url.searchParams.get("shop-id");
@@ -70,17 +78,24 @@ export class ContextResolver {
 			paramsObject[key] = value;
 		});
 
-		return new Context(shop, paramsObject, new HttpClient(shop));
+		return new Context<Shop, Payload>(
+			shop as Shop,
+			paramsObject as Payload,
+			new HttpClient(shop),
+		);
 	}
 }
 
 /**
  * Context is the parsed data from the request
  */
-export class Context {
+export class Context<
+	Shop extends ShopInterface = ShopInterface,
+	Payload = unknown,
+> {
 	constructor(
-		public shop: ShopInterface,
-		public payload: any,
+		public shop: Shop,
+		public payload: Payload,
 		public httpClient: HttpClient,
 	) {}
 }

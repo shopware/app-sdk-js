@@ -9,25 +9,17 @@ import type { ShopInterface, ShopRepositoryInterface } from "../repository.js";
 /**
  * DenoKVRepository is a ShopRepositoryInterface implementation that uses the Deno KV storage to save the shop data
  */
-export class DenoKVRepository implements ShopRepositoryInterface {
+export class DenoKVRepository implements ShopRepositoryInterface<SimpleShop> {
 	constructor(private namespace = "shops") {}
 
-	createShopStruct(
-		shopId: string,
-		shopUrl: string,
-		shopSecret: string,
-	): ShopInterface {
-		return new SimpleShop(shopId, shopUrl, shopSecret);
-	}
-
-	async createShop(shop: ShopInterface): Promise<void> {
+	async createShop(id: string, url: string, secret: string): Promise<void> {
 		// @ts-ignore
 		const kv = await Deno.openKv();
 
-		await kv.set([this.namespace, shop.getShopId()], shop);
+		await kv.set([this.namespace, id], new SimpleShop(id, url, secret));
 	}
 
-	async getShopById(id: string): Promise<ShopInterface | null> {
+	async getShopById(id: string): Promise<SimpleShop | null> {
 		// @ts-ignore
 		const kv = await Deno.openKv();
 
@@ -54,8 +46,11 @@ export class DenoKVRepository implements ShopRepositoryInterface {
 		return shop;
 	}
 
-	async updateShop(shop: ShopInterface): Promise<void> {
-		await this.createShop(shop);
+	async updateShop(shop: SimpleShop): Promise<void> {
+		// @ts-ignore
+		const kv = await Deno.openKv();
+
+		await kv.set([this.namespace, shop.getShopId()], shop);
 	}
 
 	async deleteShop(id: string): Promise<void> {

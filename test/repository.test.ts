@@ -22,15 +22,11 @@ describe("Repository", async () => {
 
 		const repository = new InMemoryShopRepository();
 
-		expect(repository.createShopStruct("test", "test", "test")).toBeInstanceOf(
-			SimpleShop,
-		);
-
 		expect(repository.getShopById("test")).resolves.toBeNull();
 
-		await repository.createShop(shop);
+		await repository.createShop("test", "test", "test");
 
-		expect(repository.getShopById("test")).resolves.toBe(shop);
+		expect(repository.getShopById("test")).resolves.toBeInstanceOf(SimpleShop);
 
 		await repository.deleteShop("test");
 

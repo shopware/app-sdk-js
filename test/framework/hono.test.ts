@@ -6,7 +6,7 @@ import { InMemoryShopRepository } from "../../src/repository.js";
 describe("Hono", async () => {
 	const repo = new InMemoryShopRepository();
 
-	await repo.createShop(repo.createShopStruct("a", "a", "a"));
+	await repo.createShop("a", "a", "a");
 
 	test("configre by functions", async () => {
 		const hono = new Hono();

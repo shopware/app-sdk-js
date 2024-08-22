@@ -16,7 +16,7 @@ interface MiddlewareConfig {
 
 interface DataTypes {
 	app: AppServer;
-	context: Context;
+	context: Context<ShopInterface, unknown>;
 	shop: ShopInterface;
 }
 
@@ -108,12 +108,12 @@ export function configureAppServer(
 			return;
 		}
 
-		let context: Context;
+		let context: Context<ShopInterface, unknown>;
 		try {
 			context =
 				ctx.req.method === "GET"
-					? await app.contextResolver.fromModule(ctx.req.raw)
-					: await app.contextResolver.fromSource(ctx.req.raw);
+					? await app.contextResolver.fromBrowser(ctx.req.raw)
+					: await app.contextResolver.fromAPI(ctx.req.raw);
 		} catch (_e) {
 			return jsonResponse({ message: "Invalid request" }, 400);
 		}
