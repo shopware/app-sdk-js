@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Hono } from "hono";
-import { configureAppServer } from "../../src/framework/hono.js";
-import { InMemoryShopRepository } from "../../src/repository.js";
+import { InMemoryShopRepository } from "../../app-server-sdk/src/repository.js";
+import { configureAppServer } from "../src/mod.js";
 
 describe("Hono", async () => {
 	const repo = new InMemoryShopRepository();
@@ -51,7 +51,7 @@ describe("Hono", async () => {
 				{
 					headers: new Headers({
 						"shopware-app-signature":
-							"9dc0fce19213bef78ad62a39fe552380f7333350c0236221cdb321f33474ed65",
+							"96c91f86c822e11444b7a57b54ef125ed86b1a639c5360d45c5397daa8c3f70b",
 					}),
 				},
 			),

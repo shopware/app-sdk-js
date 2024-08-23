@@ -10,5 +10,8 @@
   "description": "",
   "devDependencies": {
     "@types/bun": "^1.1.6"
+  },
+  "dependencies": {
+    "@shopware-ag/app-server-sdk": "^1.0.0"
   }
 }

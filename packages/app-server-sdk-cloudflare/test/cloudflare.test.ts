@@ -1,15 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { SimpleShop } from "../../src/repository.js";
-import {
-	CloudflareShopRepository,
-	type KVNamespace,
-	type KVNamespaceGetOptions,
-	type KVNamespacePutOptions,
-} from "../../src/service/cloudflare.js";
+import { SimpleShop } from "../../app-server-sdk/src/repository.js";
+import { CloudflareShopRepository } from "../src/mod.js";
 
 describe("Cloudflare", async () => {
 	test("createShop", async () => {
-		const repo = new CloudflareShopRepository(new MockedKVNamespace());
+		const repo = new CloudflareShopRepository(
+			new MockedKVNamespace() as unknown as KVNamespace,
+		);
 
 		await repo.createShop("test", "test", "test");
 
@@ -31,7 +28,7 @@ describe("Cloudflare", async () => {
 	});
 });
 
-class MockedKVNamespace implements KVNamespace {
+class MockedKVNamespace {
 	storage: Map<string, string>;
 	constructor() {
 		this.storage = new Map();

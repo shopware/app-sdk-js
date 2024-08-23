@@ -1,5 +1,5 @@
-import { SimpleShop } from "../repository.js";
-import type { ShopInterface, ShopRepositoryInterface } from "../repository.js";
+import { SimpleShop } from "@shopware-ag/app-server-sdk";
+import type { ShopRepositoryInterface } from "@shopware-ag/app-server-sdk";
 
 /**
  * Deno KV integration

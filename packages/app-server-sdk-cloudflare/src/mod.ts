@@ -1,5 +1,5 @@
-import { SimpleShop } from "../repository.js";
-import type { ShopInterface, ShopRepositoryInterface } from "../repository.js";
+import { SimpleShop } from "@shopware-ag/app-server-sdk";
+import type { ShopRepositoryInterface } from "@shopware-ag/app-server-sdk";
 
 /**
  * Cloudflare KV integration
@@ -57,37 +57,4 @@ export class CloudflareShopRepository
 		shop.setShopCredentials(obj.shopClientId || "", obj.shopClientSecret || "");
 		return shop;
 	}
-}
-
-/**
- * Cloudflare KV
- */
-export declare interface KVNamespace<Key extends string = string> {
-	get(
-		key: Key,
-		options?: Partial<KVNamespaceGetOptions<undefined>>,
-	): Promise<string | null>;
-	put(
-		key: Key,
-		value: string | ArrayBuffer | ArrayBufferView | ReadableStream,
-		options?: KVNamespacePutOptions,
-	): Promise<void>;
-	delete(key: Key): Promise<void>;
-}
-
-/**
- * Cloudflare KV get options
- */
-export declare interface KVNamespaceGetOptions<Type> {
-	type: Type;
-	cacheTtl?: number;
-}
-
-/**
- * Cloudflare KV put options
- */
-export declare interface KVNamespacePutOptions {
-	expiration?: number;
-	expirationTtl?: number;
-	metadata?: any | null;
 }
