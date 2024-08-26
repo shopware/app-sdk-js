@@ -1,10 +1,11 @@
 /.idea
 node_modules
-/dist
+dist
 npm
 /examples/*/bun.lockdb
 /examples/*/package-lock.json
 /examples/*/.wrangler
+
 
 .tshy
 .tshy-build

@@ -1,0 +1,37 @@
+{
+	"name": "@shopware-ag/app-server-sdk-hono",
+	"version": "1.0.0",
+	"description": "Hono Integration for the Shopware App Server SDK",
+	"type": "module",
+	"license": "MIT",
+	"dependencies": {
+		"hono": "^4.5.0",
+		"@shopware-ag/app-server-sdk": "^1.0.0"
+	},
+	"tshy": {
+		"exports": {
+			"./package.json": "./package.json",
+			".": "./src/mod.ts"
+		}
+	},
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"deno": {
+				"types": "./dist/deno/mod.d.ts",
+				"default": "./dist/deno/mod.js"
+			},
+			"import": {
+				"types": "./dist/esm/mod.d.ts",
+				"default": "./dist/esm/mod.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/mod.d.ts",
+				"default": "./dist/commonjs/mod.js"
+			}
+		}
+	},
+	"main": "./dist/commonjs/mod.js",
+	"types": "./dist/commonjs/mod.d.ts",
+	"module": "./dist/esm/mod.js"
+}

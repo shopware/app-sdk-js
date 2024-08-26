@@ -1,0 +1,39 @@
+{
+	"name": "@shopware-ag/app-server-sdk-cloudflare",
+	"version": "1.0.0",
+	"description": "Cloudflare Workers Integration for the Shopware App Server SDK",
+	"type": "module",
+	"license": "MIT",
+	"tshy": {
+		"exports": {
+			"./package.json": "./package.json",
+			".": "./src/mod.ts"
+		}
+	},
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"deno": {
+				"types": "./dist/deno/mod.d.ts",
+				"default": "./dist/deno/mod.js"
+			},
+			"import": {
+				"types": "./dist/esm/mod.d.ts",
+				"default": "./dist/esm/mod.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/mod.d.ts",
+				"default": "./dist/commonjs/mod.js"
+			}
+		}
+	},
+	"main": "./dist/commonjs/mod.js",
+	"types": "./dist/commonjs/mod.d.ts",
+	"module": "./dist/esm/mod.js",
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20240821.1"
+	},
+	"dependencies": {
+		"@shopware-ag/app-server-sdk": "workspace:*"
+	}
+}

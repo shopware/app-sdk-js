@@ -1,64 +1,37 @@
-import { AppServer } from "../app.js";
-import type { Context } from "../context-resolver.js";
-import type { ShopInterface, ShopRepositoryInterface } from "../repository.js";
+import { AppServer } from "@shopware-ag/app-server-sdk";
+import type {
+	Context,
+	ShopInterface,
+	ShopRepositoryInterface,
+} from "@shopware-ag/app-server-sdk";
+
+import type { Hono, Context as HonoContext } from "hono";
+
+declare module "hono" {
+	interface ContextVariableMap {
+		app: AppServer;
+		shop: ShopInterface;
+		context: Context;
+	}
+}
 
 interface MiddlewareConfig {
-	appName: string | ((c: HonoContext<DataTypes>) => string);
-	appSecret: string | ((c: HonoContext<DataTypes>) => string);
+	appName: string | ((c: HonoContext) => string);
+	appSecret: string | ((c: HonoContext) => string);
 	appUrl?: string | null;
 	registrationUrl?: string | null;
 	registerConfirmationUrl?: string | null;
 	appPath?: string | null;
 	shopRepository:
 		| ShopRepositoryInterface
-		| ((c: HonoContext<DataTypes>) => ShopRepositoryInterface);
+		| ((c: HonoContext) => ShopRepositoryInterface);
 }
-
-interface DataTypes {
-	app: AppServer;
-	context: Context<ShopInterface, unknown>;
-	shop: ShopInterface;
-}
-
-interface HonoContext<DataTypes> {
-	env: any;
-	req: {
-		path: string;
-		method: string;
-		url: string;
-		raw: Request;
-	};
-	header: (key: string, value: string) => void;
-	res: Response;
-	get<K extends keyof DataTypes>(key: K): DataTypes[K];
-	set<K extends keyof DataTypes>(key: K, value: DataTypes[K]): void;
-}
-
-interface Hono {
-	use: (
-		path: string,
-		handler: (ctx: HonoContext<DataTypes>, next: () => Promise<void>) => void,
-	) => void;
-	get: (
-		path: string,
-		handler: (ctx: HonoContext<DataTypes>, next: () => void) => void,
-	) => void;
-	post: (
-		path: string,
-		handler: (ctx: HonoContext<DataTypes>, next: () => void) => void,
-	) => void;
-}
-
-let app: AppServer | null = null;
 
 /**
  * Configure the Hono server to handle the app registration and context resolution
  */
-export function configureAppServer(
-	honoExternal: unknown,
-	cfg: MiddlewareConfig,
-) {
-	const hono = honoExternal as Hono;
+export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
+	let app: AppServer | null = null;
 
 	cfg.registrationUrl = cfg.registrationUrl || "/app/register";
 	cfg.registerConfirmationUrl =

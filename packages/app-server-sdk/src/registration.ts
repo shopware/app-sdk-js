@@ -20,9 +20,13 @@ export class Registration {
 			return new InvalidRequestResponse("Invalid Request", 400);
 		}
 
+		const shopId = url.searchParams.get("shop-id") as string;
+		const shopUrl = url.searchParams.get("shop-url") as string;
+		const timestamp = url.searchParams.get("timestamp") as string;
+
 		const v = await this.app.signer.verify(
 			req.headers.get("shopware-app-signature") as string,
-			`shop-id=${url.searchParams.get("shop-id")}&shop-url=${url.searchParams.get("shop-url")}&timestamp=${url.searchParams.get("timestamp")}`,
+			`shop-id=${shopId}&shop-url=${shopUrl}&timestamp=${timestamp}`,
 			this.app.cfg.appSecret,
 		);
 
@@ -30,8 +34,6 @@ export class Registration {
 			return new InvalidRequestResponse("Cannot validate app signature");
 		}
 
-		const shopId = url.searchParams.get("shop-id") as string;
-		const shopUrl = url.searchParams.get("shop-url") as string;
 		const shopSecret = randomString();
 
 		await this.app.repository.createShop(shopId, shopUrl, shopSecret);
