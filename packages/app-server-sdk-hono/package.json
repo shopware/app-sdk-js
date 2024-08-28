@@ -6,7 +6,7 @@
 	"license": "MIT",
 	"dependencies": {
 		"hono": "^4.5.0",
-		"@shopware-ag/app-server-sdk": "^1.0.0"
+		"@shopware-ag/app-server-sdk": "workspace:^"
 	},
 	"tshy": {
 		"exports": {
@@ -31,6 +31,7 @@
 			}
 		}
 	},
+	"files": ["dist"],
 	"main": "./dist/commonjs/mod.js",
 	"types": "./dist/commonjs/mod.d.ts",
 	"module": "./dist/esm/mod.js"

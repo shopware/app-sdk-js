@@ -30,8 +30,8 @@
 	"main": "./dist/commonjs/mod.js",
 	"types": "./dist/commonjs/mod.d.ts",
 	"module": "./dist/esm/mod.js",
-	"workspaces": ["packages/*"],
+	"files": ["dist"],
 	"dependencies": {
-		"@shopware-ag/app-server-sdk": "workspace:*"
+		"@shopware-ag/app-server-sdk": "workspace:^"
 	}
 }
