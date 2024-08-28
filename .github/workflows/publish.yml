@@ -1,0 +1,32 @@
+name: Publish
+
+on:
+    release:
+        types: [published]
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - uses: pnpm/action-setup@v3
+              with:
+                version: 9
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+
+            - name: Init
+              run: make init
+
+            - name: Set version
+              run: make bump-version version=${{ github.event.release.tag_name }} 
+
+            - name: Publish
+              run: pnpm publish --no-git-checks --access public --filter './packages/*'
+              env:
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  NPM_CONFIG_PROVENANCE: true
