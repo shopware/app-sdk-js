@@ -12,14 +12,14 @@ This SDK is written in pure Typescript with portability in mind being able to us
 ## How to use it?
 
 ```bash
-npm install @shopware-ag/app-server --save
+npm install @shopware-ag/app-server-sdk --save
 ```
 
 ## Example
 
 ```typescript
-import { AppServer, InMemoryShopRepository } from '@shopware-ag/app-server'
-import { createNotificationResponse } from '@shopware-ag/app-server/helper/app-actions'
+import { AppServer, InMemoryShopRepository } from '@shopware-ag/app-server-sdk'
+import { createNotificationResponse } from '@shopware-ag/app-server-sdk/helper/app-actions'
 
 const app = new AppServer({
     appName: 'MyApp',
