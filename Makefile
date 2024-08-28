@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-PACKAGES := app-server-sdk app-server-sdk-cloudflare app-server-sdk-deno app-server-sdk-hono
+PACKAGES := app-server-sdk app-server-sdk-cloudflare app-server-sdk-deno app-server-sdk-hono app-server-sdk-dynamodb
 
 init:
 	pnpm install
