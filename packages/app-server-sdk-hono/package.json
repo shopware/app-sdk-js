@@ -17,10 +17,6 @@
 	"exports": {
 		"./package.json": "./package.json",
 		".": {
-			"deno": {
-				"types": "./dist/deno/mod.d.ts",
-				"default": "./dist/deno/mod.js"
-			},
 			"import": {
 				"types": "./dist/esm/mod.d.ts",
 				"default": "./dist/esm/mod.js"

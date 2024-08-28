@@ -34,14 +34,14 @@ importers:
   packages/app-server-sdk-deno:
     dependencies:
       '@shopware-ag/app-server-sdk':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../app-server-sdk
 
   packages/app-server-sdk-hono:
     dependencies:
       '@shopware-ag/app-server-sdk':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: workspace:^
+        version: link:../app-server-sdk
       hono:
         specifier: ^4.5.0
         version: 4.5.8
@@ -111,9 +111,6 @@ packages:
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
-
-  '@shopware-ag/app-server-sdk@1.0.0':
-    resolution: {integrity: sha512-6Uoh4IDxRDxDyCKDuHA8quK9SejHIIQeZ6T0dbp9A1GiyL0w+wVpkgIM5i+uMA+fOXUumME/7edTJzfJg2YCvQ==}
 
   '@types/bun@1.1.6':
     resolution: {integrity: sha512-uJgKjTdX0GkWEHZzQzFsJkWp5+43ZS7HC8sZPFnOwnSo1AsNl2q9o2bFeS23disNDqbggEgyFkKCHl/w8iZsMA==}
@@ -412,8 +409,6 @@ snapshots:
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
-
-  '@shopware-ag/app-server-sdk@1.0.0': {}
 
   '@types/bun@1.1.6':
     dependencies:
