@@ -26,9 +26,7 @@
 	"main": "./dist/commonjs/mod.js",
 	"types": "./dist/commonjs/mod.d.ts",
 	"module": "./dist/esm/mod.js",
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20240821.1"
 	},

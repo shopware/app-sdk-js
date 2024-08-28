@@ -4,10 +4,7 @@
 	"description": "App Server SDK for JavaScript",
 	"type": "module",
 	"license": "MIT",
-	"keywords": [
-		"shopware",
-		"app-server"
-	],
+	"keywords": ["shopware", "app-server"],
 	"exports": {
 		"./package.json": "./package.json",
 		".": {
@@ -44,9 +41,7 @@
 	"main": "./dist/commonjs/mod.js",
 	"module": "./dist/esm/mod.js",
 	"types": "./dist/commonjs/mod.d.ts",
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
 		"@types/bun": "^1.1.6",

@@ -26,9 +26,7 @@
 	"main": "./dist/commonjs/mod.js",
 	"types": "./dist/commonjs/mod.d.ts",
 	"module": "./dist/esm/mod.js",
-	"files": [
-		"dist"
-	],
+	"files": ["dist"],
 	"dependencies": {
 		"@shopware-ag/app-server-sdk": "workspace:^"
 	}
