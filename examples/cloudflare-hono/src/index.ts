@@ -1,12 +1,12 @@
-import { configureAppServer } from "@shopware-ag/app-server/framework/hono.js";
-import { CloudflareShopRepository } from "@shopware-ag/app-server/service/cloudflare-workers.js";
-import { Hono } from "hono.js";
+import { configureAppServer } from "@shopware-ag/app-server-sdk-hono";
+import { CloudflareShopRepository } from "@shopware-ag/app-server-sdk-cloudflare";
+import { Hono } from "hono";
 import type {
   AppServer,
   Context,
   ShopInterface,
-} from "@shopware-ag/app-server.js";
-import { createNotificationResponse } from "@shopware-ag/app-server/helper/app-actions.js";
+} from "@shopware-ag/app-server-sdk";
+import { createNotificationResponse } from "@shopware-ag/app-server-sdk/helper/app-actions";
 
 const app = new Hono();
 

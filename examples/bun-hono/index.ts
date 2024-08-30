@@ -1,19 +1,21 @@
 import { Hono } from "hono";
-import { configureAppServer } from "@shopware-ag/app-server/framework/hono";
+import { logger } from 'hono/logger'
+import { configureAppServer } from "@shopware-ag/app-server-sdk-hono";
 import { BunSqliteRepository } from "./repository.js";
 import {
   AppServer,
   ShopInterface,
   Context,
   SimpleShop,
-} from "@shopware-ag/app-server";
+} from "@shopware-ag/app-server-sdk";
 import {
   ActionButtonRequest,
   BrowserAppModuleRequest,
-} from "@shopware-ag/app-server/types";
-import { createNotificationResponse } from "@shopware-ag/app-server/helper/app-actions";
+} from "@shopware-ag/app-server-sdk/types";
+import { createNotificationResponse } from "@shopware-ag/app-server-sdk/helper/app-actions";
 
 const app = new Hono();
+app.use(logger());
 
 configureAppServer(app, {
   appName: "MyApp",

@@ -55,6 +55,13 @@ export class CloudflareShopRepository
 		);
 
 		shop.setShopCredentials(obj.shopClientId || "", obj.shopClientSecret || "");
+
+		if (obj.shopActive === undefined) {
+			obj.shopActive = true;
+		}
+
+		shop.setShopActive(obj.shopActive);
+
 		return shop;
 	}
 }

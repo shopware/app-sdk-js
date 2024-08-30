@@ -1,12 +1,12 @@
-import { InMemoryShopRepository } from "@shopware-ag/app-server.js";
-import { configureAppServer } from "@shopware-ag/app-server/framework/hono.js";
-import { Hono } from "hono.js";
+import { InMemoryShopRepository } from "@shopware-ag/app-server-sdk";
+import { configureAppServer } from "@shopware-ag/app-server-sdk-hono";
+import { Hono } from "hono";
 import type {
   AppServer,
   Context,
   ShopInterface,
-} from "@shopware-ag/app-server.js";
-import { createNotificationResponse } from "@shopware-ag/app-server/helper/app-actions.js";
+} from "@shopware-ag/app-server-sdk";
+import { createNotificationResponse } from "@shopware-ag/app-server-sdk/helper/app-actions";
 
 import { serve } from '@hono/node-server';
 

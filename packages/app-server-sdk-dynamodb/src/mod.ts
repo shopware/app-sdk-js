@@ -10,9 +10,7 @@ import {
 	SimpleShop,
 } from "@shopware-ag/app-server-sdk";
 
-export default class DynamoDBRepository
-	implements ShopRepositoryInterface<SimpleShop>
-{
+export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
 	docClient: DynamoDBDocumentClient;
 	tableName: string;
 
@@ -57,6 +55,12 @@ export default class DynamoDBRepository
 			response.Item.secret,
 		);
 
+		if (response.Item.active === undefined) {
+			response.Item.active = true;
+		}
+
+		shop.setShopActive(response.Item.active);
+
 		if (response.Item.clientId) {
 			shop.setShopCredentials(
 				response.Item.clientId,
@@ -72,7 +76,7 @@ export default class DynamoDBRepository
 			TableName: this.tableName,
 			Item: {
 				id: shop.getShopId(),
-				active: true,
+				active: shop.getShopActive(),
 				url: shop.getShopUrl(),
 				secret: shop.getShopSecret(),
 				clientId: shop.getShopClientId(),

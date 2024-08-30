@@ -10,8 +10,10 @@
   "author": "author",
   "license": "MIT",
   "dependencies": {
-    "@shopware-ag/app-server": "npm:@jsr/friendsofshopware__app-server@^0.0.55",
-    "hono": "~4.4.7"
+    "@shopware-ag/app-server-sdk": "*",
+    "@shopware-ag/app-server-sdk-cloudflare": "*",
+    "@shopware-ag/app-server-sdk-hono": "*",
+    "hono": "^4.5.9"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240620.0",
