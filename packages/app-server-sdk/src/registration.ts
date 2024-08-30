@@ -97,6 +97,55 @@ export class Registration {
 
 		return new Response(null, { status: 204 });
 	}
+
+	/**
+	 * This method should be called by Shopware Shop to set the shop active.
+	 *
+	 * <webhooks>
+	 *   <webhook name="appActivate" url="http://localhost:3000/app/delete" event="app.activated"/>
+	 * </webhooks>
+	 */
+	public async activate(req: Request): Promise<Response> {
+		const ctx = await this.app.contextResolver.fromAPI(req);
+
+		ctx.shop.setShopActive(true);
+
+		await this.app.repository.updateShop(ctx.shop);
+
+		return new Response(null, { status: 204 });
+	}
+
+	/**
+	 * This method should be called by Shopware Shop to set the shop in-active.
+	 *
+	 * <webhooks>
+	 *   <webhook name="appDeactivated" url="http://localhost:3000/app/deactivated" event="app.deactivated"/>
+	 * </webhooks>
+	 */
+	public async deactivate(req: Request): Promise<Response> {
+		const ctx = await this.app.contextResolver.fromAPI(req);
+
+		ctx.shop.setShopActive(false);
+
+		await this.app.repository.updateShop(ctx.shop);
+
+		return new Response(null, { status: 204 });
+	}
+
+	/**
+	 * This method should be called by Shopware Shop to delete the app.
+	 *
+	 * <webhooks>
+	 *   <webhook name="appDelete" url="http://localhost:3000/app/delete" event="app.deleted"/>
+	 * </webhooks>
+	 */
+	public async delete(req: Request): Promise<Response> {
+		const ctx = await this.app.contextResolver.fromAPI(req);
+
+		await this.app.repository.deleteShop(ctx.shop.getShopId());
+
+		return new Response(null, { status: 204 });
+	}
 }
 
 export function randomString(length = 120) {

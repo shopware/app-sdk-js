@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from "bun:test";
-import DynamoDBRepository from "../src/mod.js";
+import { DynamoDBRepository } from "../src/mod.js";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import type { DeleteCommand, PutCommand } from "@aws-sdk/lib-dynamodb";

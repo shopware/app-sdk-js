@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { SimpleShop } from "../../app-server-sdk/src/repository.js";
+import { SimpleShop } from "@shopware-ag/app-server-sdk";
 import { DenoKVRepository } from "../src/mod.js";
 
 describe("Deno", async () => {

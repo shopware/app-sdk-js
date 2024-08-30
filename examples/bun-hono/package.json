@@ -9,6 +9,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "hono": "^4.5.8"
+    "hono": "^4.5.8",
+    "@shopware-ag/app-server-sdk": "*",
+    "@shopware-ag/app-server-sdk-hono": "*"
   }
 }

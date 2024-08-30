@@ -7,7 +7,9 @@ export interface ShopInterface {
 	getShopSecret(): string;
 	getShopClientId(): string | null;
 	getShopClientSecret(): string | null;
+	getShopActive(): boolean;
 	setShopCredentials(clientId: string, clientSecret: string): void;
+	setShopActive(active: boolean): void;
 }
 
 /**
@@ -33,8 +35,7 @@ export class SimpleShop implements ShopInterface {
 	private shopSecret: string;
 	private shopClientId: string | null;
 	private shopClientSecret: string | null;
-
-	yes() {}
+	private shopActive = true;
 
 	constructor(shopId: string, shopUrl: string, shopSecret: string) {
 		this.shopId = shopId;
@@ -42,6 +43,13 @@ export class SimpleShop implements ShopInterface {
 		this.shopSecret = shopSecret;
 		this.shopClientId = null;
 		this.shopClientSecret = null;
+	}
+
+	getShopActive(): boolean {
+		return this.shopActive;
+	}
+	setShopActive(active: boolean): void {
+		this.shopActive = active;
 	}
 
 	getShopId(): string {

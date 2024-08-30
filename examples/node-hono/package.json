@@ -5,13 +5,13 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch index.ts",
-    "start": "tsx index.ts"
+    "start": "node --experimental-strip-types index.ts"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@shopware-ag/app-server": "npm:@jsr/friendsofshopware__app-server@^0.0.55",
+    "@shopware-ag/app-server-sdk": "*",
+    "@shopware-ag/app-server-sdk-hono": "*",
     "@hono/node-server": "^1.11.4",
     "hono": "^4.4.7"
   },

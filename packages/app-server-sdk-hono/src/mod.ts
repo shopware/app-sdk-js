@@ -9,9 +9,11 @@ import type { Hono, Context as HonoContext } from "hono";
 
 declare module "hono" {
 	interface ContextVariableMap {
-		app: AppServer;
+		// @ts-ignore
+		app: AppServer<ShopInterface>;
 		shop: ShopInterface;
-		context: Context;
+		// @ts-ignore
+		context: Context<ShopInterface, unknown>;
 	}
 }
 
@@ -21,6 +23,9 @@ interface MiddlewareConfig {
 	appUrl?: string | null;
 	registrationUrl?: string | null;
 	registerConfirmationUrl?: string | null;
+	appActivateUrl?: string | null;
+	appDeactivateUrl?: string | null;
+	appDeleteUrl?: string | null;
 	appPath?: string | null;
 	shopRepository:
 		| ShopRepositoryInterface
@@ -36,6 +41,9 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 	cfg.registrationUrl = cfg.registrationUrl || "/app/register";
 	cfg.registerConfirmationUrl =
 		cfg.registerConfirmationUrl || "/app/register/confirm";
+	cfg.appActivateUrl = cfg.appActivateUrl || "/app/activate";
+	cfg.appDeactivateUrl = cfg.appDeactivateUrl || "/app/deactivate";
+	cfg.appDeleteUrl = cfg.appDeleteUrl || "/app/delete";
 	cfg.appPath = cfg.appPath || "/app/*";
 
 	hono.use("*", async (ctx, next) => {
@@ -64,18 +72,23 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 			);
 		}
 
+		// @ts-ignore
 		ctx.set("app", app);
 
 		await next();
 	});
 
 	hono.use(cfg.appPath, async (ctx, next) => {
+		// @ts-ignore
 		const app = ctx.get("app") as AppServer;
 
 		// Don't validate signature for registration
 		if (
 			ctx.req.path === cfg.registrationUrl ||
-			ctx.req.path === cfg.registerConfirmationUrl
+			ctx.req.path === cfg.registerConfirmationUrl ||
+			ctx.req.path === cfg.appActivateUrl ||
+			ctx.req.path === cfg.appDeactivateUrl ||
+			ctx.req.path === cfg.appDeleteUrl
 		) {
 			await next();
 			return;
@@ -91,7 +104,9 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 			return jsonResponse({ message: "Invalid request" }, 400);
 		}
 
+		// @ts-ignore
 		ctx.set("shop", context.shop);
+		// @ts-ignore
 		ctx.set("context", context);
 
 		await next();
@@ -118,6 +133,24 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 		const app = ctx.get("app");
 
 		return await app.registration.authorizeCallback(ctx.req.raw);
+	});
+
+	hono.post(cfg.appActivateUrl, async (ctx) => {
+		const app = ctx.get("app");
+
+		return await app.registration.activate(ctx.req.raw);
+	});
+
+	hono.post(cfg.appDeactivateUrl, async (ctx) => {
+		const app = ctx.get("app");
+
+		return await app.registration.deactivate(ctx.req.raw);
+	});
+
+	hono.post(cfg.appDeleteUrl, async (ctx) => {
+		const app = ctx.get("app");
+
+		return await app.registration.delete(ctx.req.raw);
 	});
 }
 

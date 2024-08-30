@@ -28,6 +28,7 @@
 	"module": "./dist/esm/mod.js",
 	"files": ["dist"],
 	"devDependencies": {
+		"@types/bun": "^1.1.6",
 		"@cloudflare/workers-types": "^4.20240821.1"
 	},
 	"dependencies": {

@@ -31,13 +31,19 @@ export class DenoKVRepository implements ShopRepositoryInterface<SimpleShop> {
 
 		const data = result.value as {
 			shopId: string;
+			shopActive: boolean | undefined;
 			shopUrl: string;
 			shopSecret: string;
 			shopClientId: string | null;
 			shopClientSecret: string | null;
 		};
 
+		if (data.shopActive === undefined) {
+			data.shopActive = true;
+		}
+
 		const shop = new SimpleShop(data.shopId, data.shopUrl, data.shopSecret);
+		shop.setShopActive(data.shopActive);
 
 		if (data.shopClientId && data.shopClientSecret) {
 			shop.setShopCredentials(data.shopClientId, data.shopClientSecret);

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
-    "module": "ESNext",
+    "module": "NodeNext",
     "target": "esnext",
     "lib": ["esnext", "webworker", "dom"],
     "alwaysStrict": true,
