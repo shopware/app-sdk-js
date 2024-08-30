@@ -12,6 +12,12 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
 
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  registry-url: "https://registry.npmjs.org"
+
             - uses: pnpm/action-setup@v3
               with:
                 version: 9
@@ -28,5 +34,5 @@ jobs:
             - name: Publish
               run: pnpm publish --no-git-checks --access public --filter './packages/*'
               env:
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
                   NPM_CONFIG_PROVENANCE: true
