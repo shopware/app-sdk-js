@@ -1,9 +1,9 @@
 import { describe, expect, mock, test } from "bun:test";
-import { DynamoDBRepository } from "../../src/integration/dynamodb.js";
+import { DynamoDBRepository } from "./dynamodb.js";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import type { DeleteCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
-import { SimpleShop } from "../../src/repository.js";
+import { SimpleShop } from "../repository.js";
 
 describe("DynamoDB", async () => {
 	test("getShopById does not exists", async () => {

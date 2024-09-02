@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Hono } from "hono";
-import { configureAppServer } from "../../src/integration/hono.js";
-import { InMemoryShopRepository } from "../../src/repository.js";
+import { configureAppServer } from "./hono.js";
+import { InMemoryShopRepository } from "../repository.js";
 
 describe("Hono", async () => {
 	const repo = new InMemoryShopRepository();
