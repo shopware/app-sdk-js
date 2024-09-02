@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Hono } from "hono";
-import { InMemoryShopRepository } from "../../app-server-sdk/src/repository.js";
-import { configureAppServer } from "../src/mod.js";
+import { configureAppServer } from "../../src/integration/hono.js";
+import { InMemoryShopRepository } from "../../src/repository.js";
 
 describe("Hono", async () => {
 	const repo = new InMemoryShopRepository();
@@ -59,7 +59,7 @@ describe("Hono", async () => {
 
 		expect(resp.status).toBe(200);
 
-		const body = await resp.json();
+		const body = (await resp.json()) as { proof: string };
 
 		expect(body).toBeObject();
 

@@ -5,10 +5,7 @@ import {
 	GetCommand,
 	PutCommand,
 } from "@aws-sdk/lib-dynamodb";
-import {
-	type ShopRepositoryInterface,
-	SimpleShop,
-} from "@shopware-ag/app-server-sdk";
+import { type ShopRepositoryInterface, SimpleShop } from "../repository.js";
 
 export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
 	docClient: DynamoDBDocumentClient;

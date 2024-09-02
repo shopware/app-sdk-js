@@ -8,6 +8,10 @@ jobs:
     publish:
         runs-on: ubuntu-latest
 
+        permissions:
+            id-token: write
+            contents: read
+
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -18,21 +22,20 @@ jobs:
                   node-version: 22
                   registry-url: "https://registry.npmjs.org"
 
-            - uses: pnpm/action-setup@v3
-              with:
-                version: 9
-
             - name: Setup Bun
               uses: oven-sh/setup-bun@v2
 
-            - name: Init
-              run: make init
+            - name: Install dependencies
+              run: bun install
+
+            - name: Generate ESM/CJS
+              run: bun run init
 
             - name: Set version
-              run: make bump-version version=${{ github.event.release.tag_name }} 
+              run: jq '.version = "${{ github.event.release.tag_name }}"' package.json > tmp.json && mv tmp.json package.json
 
             - name: Publish
-              run: pnpm publish --no-git-checks --access public --filter './packages/*'
+              run: npm publish --provenance
               env:
                   NPM_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
                   NPM_CONFIG_PROVENANCE: true

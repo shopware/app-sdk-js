@@ -1,7 +1,7 @@
 //
 import { describe, expect, test } from "bun:test";
-import { SimpleShop } from "@shopware-ag/app-server-sdk";
-import { CloudflareShopRepository } from "../src/mod.js";
+import { CloudflareShopRepository } from "../../src/integration/cloudflare-kv.js";
+import { SimpleShop } from "../../src/repository.js";
 
 describe("Cloudflare", async () => {
 	test("createShop", async () => {

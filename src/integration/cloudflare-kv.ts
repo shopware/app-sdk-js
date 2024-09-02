@@ -1,5 +1,5 @@
-import { SimpleShop } from "@shopware-ag/app-server-sdk";
-import type { ShopRepositoryInterface } from "@shopware-ag/app-server-sdk";
+import { SimpleShop } from "../repository.js";
+import type { ShopRepositoryInterface } from "../repository.js";
 
 /**
  * Cloudflare KV integration

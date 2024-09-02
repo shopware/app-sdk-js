@@ -1,9 +1,6 @@
-import { AppServer } from "@shopware-ag/app-server-sdk";
-import type {
-	Context,
-	ShopInterface,
-	ShopRepositoryInterface,
-} from "@shopware-ag/app-server-sdk";
+import { AppServer } from "../app.js";
+import type { Context } from "../context-resolver.js";
+import type { ShopInterface, ShopRepositoryInterface } from "../repository.js";
 
 import type { Hono, Context as HonoContext } from "hono";
 
