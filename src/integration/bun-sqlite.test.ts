@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { BunSqliteRepository } from "./bun-sqlite.js";
 import { SimpleShop } from "../repository.js";
+import { BunSqliteRepository } from "./bun-sqlite.js";
 
 describe("Bun SQLite", async () => {
 	test("createShop", async () => {

@@ -1,4 +1,4 @@
-import { ShopRepositoryInterface, SimpleShop } from "../repository.js";
+import { type ShopRepositoryInterface, SimpleShop } from "../repository.js";
 
 import { Database } from "bun:sqlite";
 
@@ -27,7 +27,7 @@ export class BunSqliteRepository
 			return await this.updateShop(shop);
 		}
 
-		this.db.exec(`INSERT INTO shop (id, url, secret) VALUES (?, ?, ?)`, [
+		this.db.exec("INSERT INTO shop (id, url, secret) VALUES (?, ?, ?)", [
 			id,
 			url,
 			secret,
@@ -45,7 +45,7 @@ export class BunSqliteRepository
 				client_secret?: string;
 			},
 			string
-		>(`SELECT * FROM shop WHERE id = ?`);
+		>("SELECT * FROM shop WHERE id = ?");
 		const result = query.get(id);
 
 		if (!result) {
@@ -64,7 +64,7 @@ export class BunSqliteRepository
 	}
 	async updateShop(shop: SimpleShop): Promise<void> {
 		this.db.exec(
-			`UPDATE shop SET url = ?, secret = ?, client_id = ?, client_secret = ?, active = ? WHERE id = ?`,
+			"UPDATE shop SET url = ?, secret = ?, client_id = ?, client_secret = ?, active = ? WHERE id = ?",
 			[
 				shop.getShopUrl(),
 				shop.getShopSecret(),

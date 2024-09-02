@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { DenoKVRepository } from "./deno-kv.js";
 import { SimpleShop } from "../repository.js";
+import { DenoKVRepository } from "./deno-kv.js";
 
 describe("Deno", async () => {
 	const kv = {
