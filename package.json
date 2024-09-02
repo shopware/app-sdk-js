@@ -67,6 +67,16 @@
 				"default": "./dist/commonjs/integration/dynamodb.js"
 			}
 		},
+		"./integration/bun-sqlite": {
+			"import": {
+				"types": "./dist/esm/integration/bun-sqlite.d.ts",
+				"default": "./dist/esm/integration/bun-sqlite.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/integration/bun-sqlite.d.ts",
+				"default": "./dist/commonjs/integration/bun-sqlite.js"
+			}
+		},
 		"./types": {
 			"import": {
 				"types": "./dist/esm/types.d.ts",
@@ -120,6 +130,7 @@
 			"./integration/cloudflare-kv": "./src/integration/cloudflare-kv.ts",
 			"./integration/deno-kv": "./src/integration/deno-kv.ts",
 			"./integration/dynamodb": "./src/integration/dynamodb.ts",
+			"./integration/bun-sqlite": "./src/integration/bun-sqlite.ts",
 			"./types": "./src/types.ts"
 		}
 	},
