@@ -11,8 +11,6 @@
   "license": "MIT",
   "dependencies": {
     "@shopware-ag/app-server-sdk": "*",
-    "@shopware-ag/app-server-sdk-cloudflare": "*",
-    "@shopware-ag/app-server-sdk-hono": "*",
     "hono": "^4.5.9"
   },
   "devDependencies": {

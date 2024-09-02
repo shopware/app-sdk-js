@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "hono": "^4.5.8",
-    "@shopware-ag/app-server-sdk": "*",
-    "@shopware-ag/app-server-sdk-hono": "*"
+    "@shopware-ag/app-server-sdk": "*"
   }
 }

@@ -1,5 +1,5 @@
-import { configureAppServer } from "@shopware-ag/app-server-sdk-hono";
-import { CloudflareShopRepository } from "@shopware-ag/app-server-sdk-cloudflare";
+import { configureAppServer } from "@shopware-ag/app-server-sdk/integration/hono";
+import { CloudflareShopRepository } from "@shopware-ag/app-server-sdk/integration/cloudflare-kv";
 import { Hono } from "hono";
 import type {
   AppServer,

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { logger } from 'hono/logger'
 import { configureAppServer } from "@shopware-ag/app-server-sdk-hono";
-import { BunSqliteRepository } from "./repository.js";
+import { BunSqliteRepository } from "@shopware-ag/app-server-sdk/integration/bun-sqlite";
 import {
   AppServer,
   ShopInterface,
@@ -20,7 +20,7 @@ app.use(logger());
 configureAppServer(app, {
   appName: "MyApp",
   appSecret: "my-secret",
-  shopRepository: new BunSqliteRepository(),
+  shopRepository: new BunSqliteRepository('shop.db'),
 });
 
 declare module "hono" {

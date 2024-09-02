@@ -11,7 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "@shopware-ag/app-server-sdk": "*",
-    "@shopware-ag/app-server-sdk-hono": "*",
     "@hono/node-server": "^1.11.4",
     "hono": "^4.4.7"
   },
