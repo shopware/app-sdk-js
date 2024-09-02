@@ -47,6 +47,26 @@
 				"default": "./dist/commonjs/integration/cloudflare-kv.js"
 			}
 		},
+		"./integration/deno-kv": {
+			"import": {
+				"types": "./dist/esm/integration/deno-kv.d.ts",
+				"default": "./dist/esm/integration/deno-kv.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/integration/deno-kv.d.ts",
+				"default": "./dist/commonjs/integration/deno-kv.js"
+			}
+		},
+		"./integration/dynamodb": {
+			"import": {
+				"types": "./dist/esm/integration/dynamodb.d.ts",
+				"default": "./dist/esm/integration/dynamodb.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/integration/dynamodb.d.ts",
+				"default": "./dist/commonjs/integration/dynamodb.js"
+			}
+		},
 		"./types": {
 			"import": {
 				"types": "./dist/esm/types.d.ts",
