@@ -26,7 +26,7 @@ interface Filters {
 	equalsAny: {
 		type: "equalsAny";
 		field: string;
-		value: string;
+		value: (string | number | boolean | null)[];
 	};
 	equals: {
 		type: "equals";
@@ -69,9 +69,9 @@ interface Aggregations {
 		type: "terms";
 		name: string;
 		field: string;
-		limit: number | null;
-		sort: Sorting | null;
-		aggregation: Aggregation | null;
+		limit?: number | null;
+		sort?: Sorting | null;
+		aggregation?: Aggregation | null;
 	};
 	sum: {
 		type: "sum";
@@ -118,7 +118,7 @@ interface Aggregations {
 }
 
 type ValueOf<T> = T[keyof T];
-type SingleFilter = ValueOf<Filters>;
+export type SingleFilter = ValueOf<Filters>;
 type Aggregation = ValueOf<Aggregations>;
 
 interface Include {
@@ -131,7 +131,7 @@ interface Association {
 interface Query {
 	score: number;
 	query: SingleFilter;
-	[scoreField: string]: unknown;
+	scoreField?: string;
 }
 interface Sorting {
 	field: string;
@@ -150,7 +150,6 @@ interface RequestParams {
 	"post-filter"?: SingleFilter[];
 	sort?: Sorting[];
 	aggregations?: Aggregation[];
-	groupFields?: GroupField[];
 	grouping?: string[];
 	fields?: string[];
 	associations?: {
@@ -160,7 +159,7 @@ interface RequestParams {
 	"total-count-mode"?: TotalCountMode;
 }
 
-export default class Criteria {
+export class Criteria {
 	title: string | null;
 
 	page: number | null;
@@ -187,27 +186,24 @@ export default class Criteria {
 
 	fields: string[];
 
-	groupFields: GroupField[];
-
 	totalCountMode: TotalCountMode | null;
 
 	includes: Include | null;
 
-	constructor(page: number | null = null, limit: number | null = null) {
-		this.page = page;
-		this.limit = limit;
+	constructor(ids: string[] = []) {
+		this.page = null;
+		this.limit = null;
 		this.term = null;
 		this.title = null;
 		this.filters = [];
 		this.includes = null;
-		this.ids = [];
+		this.ids = ids;
 		this.queries = [];
 		this.associations = [];
 		this.postFilter = [];
 		this.sortings = [];
 		this.aggregations = [];
 		this.grouping = [];
-		this.groupFields = [];
 		this.fields = [];
 		this.totalCountMode = null;
 	}
@@ -244,9 +240,6 @@ export default class Criteria {
 		}
 		if (this.aggregations.length > 0) {
 			params.aggregations = this.aggregations;
-		}
-		if (this.groupFields.length > 0) {
-			params.groupFields = this.groupFields;
 		}
 		if (this.grouping.length > 0) {
 			params.grouping = this.grouping;
@@ -374,19 +367,11 @@ export default class Criteria {
 		const query: Query = { score: score, query: filter };
 
 		if (scoreField) {
-			query[scoreField] = scoreField;
+			query.scoreField = scoreField;
 		}
 
 		this.queries.push(query);
 
-		return this;
-	}
-
-	/**
-	 * @param {Object} groupField
-	 */
-	addGroupField(groupField: GroupField): this {
-		this.groupFields.push(groupField);
 		return this;
 	}
 
@@ -441,7 +426,7 @@ export default class Criteria {
 			if (!criteria.hasAssociation(part)) {
 				criteria.associations.push({
 					association: part,
-					criteria: new Criteria(null, null),
+					criteria: new Criteria(),
 				});
 			}
 
@@ -462,7 +447,7 @@ export default class Criteria {
 		}
 
 		if (!criteria) {
-			criteria = new Criteria(null, null);
+			criteria = new Criteria();
 			this.associations.push({
 				association: part,
 				criteria,
@@ -478,44 +463,6 @@ export default class Criteria {
 
 	getPage(): number {
 		return this.page ?? 0;
-	}
-
-	getCriteriaData(): {
-		page: Criteria["page"];
-		limit: Criteria["limit"];
-		term: Criteria["term"];
-		title: Criteria["title"];
-		filters: Criteria["filters"];
-		ids: Criteria["ids"];
-		queries: Criteria["queries"];
-		associations: Criteria["associations"];
-		postFilter: Criteria["postFilter"];
-		sortings: Criteria["sortings"];
-		aggregations: Criteria["aggregations"];
-		grouping: Criteria["grouping"];
-		fields: Criteria["fields"];
-		groupFields: Criteria["groupFields"];
-		totalCountMode: Criteria["totalCountMode"];
-		includes: Criteria["includes"];
-	} {
-		return {
-			page: this.page,
-			limit: this.limit,
-			term: this.term,
-			title: this.title,
-			filters: this.filters,
-			ids: this.ids,
-			queries: this.queries,
-			associations: this.associations,
-			postFilter: this.postFilter,
-			sortings: this.sortings,
-			aggregations: this.aggregations,
-			grouping: this.grouping,
-			fields: this.fields,
-			groupFields: this.groupFields,
-			totalCountMode: this.totalCountMode,
-			includes: this.includes,
-		};
 	}
 
 	hasAssociation(property: string): boolean {
@@ -624,10 +571,10 @@ export default class Criteria {
 	static histogram(
 		name: string,
 		field: string,
-		interval: string | null,
-		format: string | null,
-		aggregation: Aggregation | null,
-		timeZone: string | null,
+		interval: string | null = null,
+		format: string | null = null,
+		aggregation: Aggregation | null = null,
+		timeZone: string | null = null,
 	): Aggregations["histogram"] {
 		return {
 			type: "histogram",
@@ -713,7 +660,7 @@ export default class Criteria {
 		field: string,
 		value: (string | number | boolean | null)[],
 	): Filters["equalsAny"] {
-		return { type: "equalsAny", field, value: value.join("|") };
+		return { type: "equalsAny", field, value: value };
 	}
 
 	/**

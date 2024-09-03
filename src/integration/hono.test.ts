@@ -129,4 +129,61 @@ describe("Hono", async () => {
 			"4a43a105ccce57e8e38d4a1f7b3565d743b1e15fb1fec36f41fdf20164fa1c8b",
 		);
 	});
+
+	test("app activate", async () => {
+		const hono = new Hono();
+
+		configureAppServer(hono, {
+			appName: "test",
+			appSecret: "test",
+			shopRepository: repo,
+		});
+
+		const resp = await hono.fetch(
+			new Request("http://localhost/app/activate", {
+				method: "POST",
+				body: "{}",
+			}),
+		);
+
+		expect(resp.status).toBe(500);
+	});
+
+	test("app deactivate", async () => {
+		const hono = new Hono();
+
+		configureAppServer(hono, {
+			appName: "test",
+			appSecret: "test",
+			shopRepository: repo,
+		});
+
+		const resp = await hono.fetch(
+			new Request("http://localhost/app/deactivate", {
+				method: "POST",
+				body: "{}",
+			}),
+		);
+
+		expect(resp.status).toBe(500);
+	});
+
+	test("app delete", async () => {
+		const hono = new Hono();
+
+		configureAppServer(hono, {
+			appName: "test",
+			appSecret: "test",
+			shopRepository: repo,
+		});
+
+		const resp = await hono.fetch(
+			new Request("http://localhost/app/delete", {
+				method: "POST",
+				body: "{}",
+			}),
+		);
+
+		expect(resp.status).toBe(500);
+	});
 });

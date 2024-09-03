@@ -222,8 +222,8 @@ export class ApiClientRequestFailed extends Error {
 		shopId: string,
 		public response: HttpClientResponse<ShopwareErrorResponse>,
 	) {
-		super(
-			`The api request failed with status code: ${response.statusCode} for shop with id: ${shopId}`,
-		);
+		const message = response.body.errors.map((e) => e.detail).join(", ");
+
+		super(`Request failed with error: ${message} for shop with id: ${shopId}`);
 	}
 }

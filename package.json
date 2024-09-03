@@ -37,6 +37,26 @@
 				"default": "./dist/commonjs/helper/criteria.js"
 			}
 		},
+		"./helper/admin-api": {
+			"import": {
+				"types": "./dist/esm/helper/admin-api.d.ts",
+				"default": "./dist/esm/helper/admin-api.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/helper/admin-api.d.ts",
+				"default": "./dist/commonjs/helper/admin-api.js"
+			}
+		},
+		"./helper/uuid": {
+			"import": {
+				"types": "./dist/esm/helper/uuid.d.ts",
+				"default": "./dist/esm/helper/uuid.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/helper/uuid.d.ts",
+				"default": "./dist/commonjs/helper/uuid.js"
+			}
+		},
 		"./integration/hono": {
 			"import": {
 				"types": "./dist/esm/integration/hono.d.ts",
@@ -156,6 +176,8 @@
 			".": "./src/mod.ts",
 			"./helper/app-actions": "./src/helper/app-actions.ts",
 			"./helper/criteria": "./src/helper/criteria.ts",
+			"./helper/admin-api": "./src/helper/admin-api.ts",
+			"./helper/uuid": "./src/helper/uuid.ts",
 			"./integration/hono": "./src/integration/hono.ts",
 			"./integration/cloudflare-kv": "./src/integration/cloudflare-kv.ts",
 			"./integration/deno-kv": "./src/integration/deno-kv.ts",
