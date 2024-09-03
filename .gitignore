@@ -9,3 +9,5 @@ bun.lockdb
 .tshy
 .tshy-build
 shop.db
+shop.db*
+package-lock.json
