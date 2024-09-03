@@ -77,6 +77,16 @@
 				"default": "./dist/commonjs/integration/bun-sqlite.js"
 			}
 		},
+		"./integration/better-sqlite3": {
+			"import": {
+				"types": "./dist/esm/integration/better-sqlite3.d.ts",
+				"default": "./dist/esm/integration/better-sqlite3.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/integration/better-sqlite3.d.ts",
+				"default": "./dist/commonjs/integration/better-sqlite3.js"
+			}
+		},
 		"./types": {
 			"import": {
 				"types": "./dist/esm/types.d.ts",
@@ -97,9 +107,10 @@
 		"provenance": true
 	},
 	"peerDependencies": {
-		"hono": "^4",
 		"@aws-sdk/client-dynamodb": "~3.637",
-		"@aws-sdk/lib-dynamodb": "~3.637"
+		"@aws-sdk/lib-dynamodb": "~3.637",
+		"better-sqlite3": "^11",
+		"hono": "^4"
 	},
 	"peerDependenciesMeta": {
 		"hono": {
@@ -110,16 +121,21 @@
 		},
 		"@aws-sdk/lib-dynamodb": {
 			"optional": true
+		},
+		"better-sqlite3": {
+			"optional": true
 		}
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.8.3",
-		"@types/bun": "^1.1.6",
-		"tshy": "^3.0.2",
-		"hono": "^4.5.6",
-		"@cloudflare/workers-types": "^4.20240821.1",
 		"@aws-sdk/client-dynamodb": "~3.637",
-		"@aws-sdk/lib-dynamodb": "~3.637"
+		"@aws-sdk/lib-dynamodb": "~3.637",
+		"@biomejs/biome": "1.8.3",
+		"@cloudflare/workers-types": "^4.20240821.1",
+		"@types/better-sqlite3": "^7.6.11",
+		"@types/bun": "^1.1.6",
+		"better-sqlite3": "^11",
+		"hono": "^4.5.6",
+		"tshy": "^3.0.2"
 	},
 	"tshy": {
 		"exports": {
@@ -131,8 +147,10 @@
 			"./integration/deno-kv": "./src/integration/deno-kv.ts",
 			"./integration/dynamodb": "./src/integration/dynamodb.ts",
 			"./integration/bun-sqlite": "./src/integration/bun-sqlite.ts",
+			"./integration/better-sqlite3": "./src/integration/better-sqlite3.ts",
 			"./types": "./src/types.ts"
-		}
+		},
+		"exclude": ["src/**/*.test.ts"]
 	},
 	"scripts": {
 		"init": "tshy && biome format . --write",
@@ -140,5 +158,5 @@
 		"lint:fix": "biome lint . --write && biome format . --write && biome check . --write",
 		"typecheck": "tsc --noEmit"
 	},
-	"trustedDependencies": ["@biomejs/biome"]
+	"trustedDependencies": ["@biomejs/biome", "better-sqlite3"]
 }

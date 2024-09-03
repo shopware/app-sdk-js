@@ -1,5 +1,4 @@
-import { InMemoryShopRepository } from "@shopware-ag/app-server-sdk";
-import { configureAppServer } from "@shopware-ag/app-server-sdk-hono";
+import { configureAppServer } from "@shopware-ag/app-server-sdk/integration/hono";
 import { Hono } from "hono";
 import type {
   AppServer,
@@ -7,6 +6,8 @@ import type {
   ShopInterface,
 } from "@shopware-ag/app-server-sdk";
 import { createNotificationResponse } from "@shopware-ag/app-server-sdk/helper/app-actions";
+
+import { BetterSqlite3Repository } from '@shopware-ag/app-server-sdk/integration/better-sqlite3';
 
 import { serve } from '@hono/node-server';
 
@@ -23,7 +24,7 @@ const app = new Hono()
 configureAppServer(app, {
     appName: "Test",
     appSecret: "Test",
-    shopRepository: new InMemoryShopRepository(),
+    shopRepository: new BetterSqlite3Repository('shop.db'),
 });
 
 app.post('/app/product', async (ctx) => {

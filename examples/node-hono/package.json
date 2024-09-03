@@ -10,12 +10,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@shopware-ag/app-server-sdk": "*",
     "@hono/node-server": "^1.11.4",
+    "@shopware-ag/app-server-sdk": "*",
+    "better-sqlite3": "^11.2.1",
     "hono": "^4.4.7"
-  },
-  "devDependencies": {
-    "tsx": "^4.15.7",
-    "typescript": "^5.5.2"
   }
 }
