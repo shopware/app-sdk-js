@@ -109,11 +109,13 @@ describe("HTTP Client", async () => {
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
 
 		mockFetch.mockImplementation(() =>
-			Promise.resolve(new Response('{"data": "test"}', { status: 400 })),
+			Promise.resolve(
+				new Response('{"errors": [{"detail": "test"}]}', { status: 400 }),
+			),
 		);
 
 		expect(client.get("/test")).rejects.toThrowError(
-			"The api request failed with status code: 400 for shop with id: blaa",
+			"Request failed with error: test for shop with id: bla",
 		);
 
 		mockFetch.mockRestore();
