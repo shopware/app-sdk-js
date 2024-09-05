@@ -18,6 +18,13 @@ export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
 		const webHookContent = await req.text();
 		const webHookBody = JSON.parse(webHookContent);
 
+		if (
+			webHookBody.source === undefined ||
+			webHookBody.source.shopId === undefined
+		) {
+			throw new Error("Invalid request");
+		}
+
 		const shop = await this.app.repository.getShopById(
 			webHookBody.source.shopId,
 		);
