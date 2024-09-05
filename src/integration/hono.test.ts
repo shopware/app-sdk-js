@@ -186,4 +186,120 @@ describe("Hono", async () => {
 
 		expect(resp.status).toBe(500);
 	});
+
+	test("app iframe cookie missing", async () => {
+		const hono = new Hono();
+
+		configureAppServer(hono, {
+			appName: "test",
+			appSecret: "test",
+			shopRepository: repo,
+			appIframeEnable: true,
+		});
+
+		hono.get("/client-api/test", (c) => {
+			return c.json({});
+		});
+
+		const resp = await hono.fetch(
+			new Request("http://localhost/client-api/test"),
+		);
+
+		expect(resp.status).toBe(400);
+		const j = (await resp.json()) as { message: string };
+		expect(j.message).toBe("Shop not found");
+	});
+
+	test("app iframe validation not existing", async () => {
+		const hono = new Hono();
+
+		configureAppServer(hono, {
+			appName: "test",
+			appSecret: "test",
+			shopRepository: new InMemoryShopRepository(),
+			appIframeEnable: true,
+		});
+
+		hono.get("/client-api/test", (c) => {
+			return c.json({ id: c.get("shop").getShopId() });
+		});
+
+		const resp = await hono.fetch(
+			new Request("http://localhost/client-api/test", {
+				headers: {
+					Cookie: "shop=a.mmj13jn1FblkG3R5JnlQiu1ycYJp%2FwFupKhNJ8ki24g%3D",
+				},
+			}),
+		);
+
+		expect(resp.status).toBe(400);
+		const j = (await resp.json()) as { message: string };
+		expect(j.message).toBe("Shop not found");
+	});
+
+	test("app iframe validation success", async () => {
+		const hono = new Hono();
+
+		configureAppServer(hono, {
+			appName: "test",
+			appSecret: "test",
+			shopRepository: repo,
+			appIframeEnable: true,
+		});
+
+		hono.get("/client-api/test", (c) => {
+			return c.json({ id: c.get("shop").getShopId() });
+		});
+
+		const resp = await hono.fetch(
+			new Request("http://localhost/client-api/test", {
+				headers: {
+					Cookie: "shop=a.mmj13jn1FblkG3R5JnlQiu1ycYJp%2FwFupKhNJ8ki24g%3D",
+				},
+			}),
+		);
+
+		expect(resp.status).toBe(200);
+
+		const j = (await resp.json()) as { id: string };
+
+		expect(j.id).toBe("a");
+	});
+
+	test("redirect with cookie", async () => {
+		const hono = new Hono();
+
+		configureAppServer(hono, {
+			appName: "test",
+			appSecret: "test",
+			shopRepository: repo,
+			appIframeEnable: true,
+			appIframeRedirects: {
+				"/app/relative": "/client",
+				"/app/absolute": "https://example.com",
+			},
+		});
+
+		const relative = await hono.fetch(
+			new Request(
+				"http://localhost/app/relative?shop-id=a&shopware-shop-signature=8b523d99aeef5b456288fcec48236c3367a914c6b2c9fded63d81257ac019b25",
+			),
+		);
+
+		expect(relative.status).toBe(302);
+		expect(relative.headers.get("Location")).toBe(
+			"http://localhost/client?shop-id=a&shopware-shop-signature=8b523d99aeef5b456288fcec48236c3367a914c6b2c9fded63d81257ac019b25",
+		);
+
+		const absolute = await hono.fetch(
+			new Request(
+				"http://localhost/app/absolute?shop-id=a&shopware-shop-signature=8b523d99aeef5b456288fcec48236c3367a914c6b2c9fded63d81257ac019b25",
+			),
+		);
+
+		expect(absolute.status).toBe(302);
+		expect(absolute.headers.get("Location")).toBe(
+			"https://example.com/?shop-id=a&shopware-shop-signature=8b523d99aeef5b456288fcec48236c3367a914c6b2c9fded63d81257ac019b25",
+		);
+	});
 });
