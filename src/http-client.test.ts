@@ -1,4 +1,4 @@
-import { describe, expect, spyOn, test } from "bun:test";
+import { describe, expect, mock, spyOn, test } from "bun:test";
 import { HttpClient } from "../src/http-client.js";
 import { SimpleShop } from "../src/repository.js";
 
@@ -95,6 +95,64 @@ describe("HTTP Client", async () => {
 		});
 
 		expect(mockFetch.mock.calls).toBeArrayOfSize(6);
+
+		mockFetch.mockRestore();
+	});
+
+	test("post: send a body data form data", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementation(() =>
+			Promise.resolve(
+				new Response('{"access_token": "test", "expires_in": 5000}'),
+			),
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
+
+		const form = new FormData();
+		form.append("test", "test");
+
+		await client.post("/test", form);
+
+		expect(mockFetch.mock.calls).toBeArrayOfSize(2);
+
+		expect(mockFetch.mock.lastCall?.[0]).toBe("test/api/test");
+		expect(mockFetch.mock.lastCall?.[1]).toEqual({
+			body: form,
+			headers: {
+				Authorization: "Bearer test",
+				accept: "application/json",
+			},
+			method: "POST",
+		});
+
+		mockFetch.mockRestore();
+	});
+
+	test("post: regular object", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementation(() =>
+			Promise.resolve(
+				new Response('{"access_token": "test", "expires_in": 5000}'),
+			),
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
+
+		const form = { test: "test" };
+
+		await client.post("/test", form);
+
+		expect(mockFetch.mock.calls).toBeArrayOfSize(2);
+
+		expect(mockFetch.mock.lastCall?.[0]).toBe("test/api/test");
+		expect(mockFetch.mock.lastCall?.[1]).toEqual({
+			body: JSON.stringify(form),
+			headers: {
+				Authorization: "Bearer test",
+				accept: "application/json",
+				"content-type": "application/json",
+			},
+			method: "POST",
+		});
 
 		mockFetch.mockRestore();
 	});

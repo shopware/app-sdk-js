@@ -28,13 +28,24 @@ export class HttpClient {
 	 */
 	async post<ResponseType>(
 		url: string,
-		json: object = {},
+		json: object | FormData | Blob = {},
 		headers: Record<string, string> = {},
 	): Promise<HttpClientResponse<ResponseType>> {
-		headers["content-type"] = "application/json";
+		let data: object | FormData | Blob | string = json;
+
+		if (!(json instanceof Blob) && !(json instanceof FormData)) {
+			headers["content-type"] = "application/json";
+			data = JSON.stringify(json);
+		}
+
 		headers.accept = "application/json";
 
-		return await this.request("POST", url, JSON.stringify(json), headers);
+		return await this.request(
+			"POST",
+			url,
+			data as FormData | Blob | string,
+			headers,
+		);
 	}
 
 	/**
@@ -82,7 +93,7 @@ export class HttpClient {
 	private async request<ResponseType>(
 		method: string,
 		url: string,
-		body: string | null = "",
+		body: string | FormData | Blob | null = "",
 		headers: Record<string, string> = {},
 	): Promise<HttpClientResponse<ResponseType>> {
 		const f = await globalThis.fetch(`${this.shop.getShopUrl()}/api${url}`, {
