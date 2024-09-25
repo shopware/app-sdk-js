@@ -85,7 +85,7 @@ export class InMemoryShopRepository
 		this.storage = new Map<string, SimpleShop>();
 	}
 
-	async createShop(id: string, secret: string, url: string) {
+	async createShop(id: string, url: string, secret: string) {
 		this.storage.set(id, new SimpleShop(id, url, secret));
 	}
 
