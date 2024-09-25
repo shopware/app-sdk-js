@@ -23,15 +23,17 @@ describe("Repository", async () => {
 	});
 
 	test("InMemoryShopRepository", async () => {
-		const shop = new SimpleShop("test", "test", "test");
+		const shop = new SimpleShop("test", "http://example.com", "secret");
 
 		const repository = new InMemoryShopRepository();
 
 		expect(repository.getShopById("test")).resolves.toBeNull();
 
-		await repository.createShop("test", "test", "test");
+		await repository.createShop("test", "http://example.com", "secret");
 
-		expect(repository.getShopById("test")).resolves.toBeInstanceOf(SimpleShop);
+		const foundShop = await repository.getShopById("test");
+		expect(foundShop).toBeInstanceOf(SimpleShop);
+		expect(foundShop).toStrictEqual(shop);
 
 		await repository.deleteShop("test");
 
