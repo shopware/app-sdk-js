@@ -36,7 +36,7 @@ const server = Bun.serve({
         } else if (pathname === '/authorize/callback') {
             return app.registration.authorizeCallback(request);
         } else if (pathname === '/app/product') {
-            const context = await app.contextResolver.fromSource(request);
+            const context = await app.contextResolver.fromAPI(request);
 
             // do something with payload, and http client
 
