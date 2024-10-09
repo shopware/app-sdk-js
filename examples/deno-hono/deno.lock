@@ -1,24 +1,24 @@
 {
-  "version": "3",
-  "packages": {
-    "specifiers": {
-      "jsr:@shopware-ag/app-server@^0.0.55": "jsr:@shopware-ag/app-server@0.0.55",
-      "jsr:@hono/hono@^4.4.7": "jsr:@hono/hono@4.4.7"
+  "version": "4",
+  "specifiers": {
+    "npm:@shopware-ag/app-server-sdk@^1.1.5": "1.1.5_hono@4.6.3",
+    "npm:hono@^4.6.3": "4.6.3"
+  },
+  "npm": {
+    "@shopware-ag/app-server-sdk@1.1.5_hono@4.6.3": {
+      "integrity": "sha512-6VdyTyrS6IWATxir/Vydd1BF/0b3hw6l/pd+7pdysHvnnganqXeBObQT+9+ez7kyCLe5LXgLNIXkwu79OB842Q==",
+      "dependencies": [
+        "hono"
+      ]
     },
-    "jsr": {
-      "@shopware-ag/app-server@0.0.55": {
-        "integrity": "4b6ecf91038a157940443ccb4fb6acb030cdc0c53d490e4008e0183fd74b2a69"
-      },
-      "@hono/hono@4.4.7": {
-        "integrity": "069f612a089362e59786ea925d19fa834096fe92bf4f4b8dd572c508a3a708aa"
-      }
+    "hono@4.6.3": {
+      "integrity": "sha512-0LeEuBNFeSHGqZ9sNVVgZjB1V5fmhkBSB0hZrpqStSMLOWgfLy0dHOvrjbJh0H2khsjet6rbHfWTHY0kpYThKQ=="
     }
   },
-  "remote": {},
   "workspace": {
     "dependencies": [
-      "jsr:@shopware-ag/app-server@^0.0.55",
-      "jsr:@hono/hono@^4.4.7"
+      "npm:@shopware-ag/app-server-sdk@^1.1.5",
+      "npm:hono@^4.6.3"
     ]
   }
 }
