@@ -24,7 +24,7 @@ export class BunSqliteRepository
 		const shop = await this.getShopById(id);
 
 		if (shop) {
-			return await this.updateShop(shop);
+			await this.deleteShop(id);
 		}
 
 		this.db.exec("INSERT INTO shop (id, url, secret) VALUES (?, ?, ?)", [
