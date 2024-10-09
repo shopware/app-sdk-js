@@ -63,12 +63,12 @@ describe("EntityRepository", () => {
 	test("aggregate", async () => {
 		const client = {
 			post(url: string, data: unknown, headers: Record<string, string>) {
-				expect(url).toBe("/aggregate/product");
+				expect(url).toBe("/search/product-foo");
 				return Promise.resolve({ body: { total: 1, data: [] } });
 			},
 		} as unknown as HttpClient;
 
-		const repository = new EntityRepository(client, "product");
+		const repository = new EntityRepository(client, "product_foo");
 
 		const res = await repository.aggregate(new Criteria());
 

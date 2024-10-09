@@ -64,7 +64,11 @@ export class EntityRepository<Entity extends object = object> {
 	): Promise<EntitySearchResult<Entity, Aggregations>> {
 		const response = await this.client.post<
 			EntitySearchResponse<Entity, Aggregations>
-		>(`/search/${this.entityName}`, criteria.toPayload(), context.toHeaders());
+		>(
+			`/search/${this.entityName.replaceAll("_", "-")}`,
+			criteria.toPayload(),
+			context.toHeaders(),
+		);
 
 		return new EntitySearchResult<Entity, Aggregations>(
 			response.body.total,
@@ -78,7 +82,7 @@ export class EntityRepository<Entity extends object = object> {
 		context: ApiContext = new ApiContext(),
 	): Promise<string[]> {
 		const response = await this.client.post<{ data: string[] }>(
-			`/search-ids/${this.entityName}`,
+			`/search-ids/${this.entityName.replaceAll("_", "-")}`,
 			criteria.toPayload(),
 			context.toHeaders(),
 		);
@@ -90,10 +94,12 @@ export class EntityRepository<Entity extends object = object> {
 		criteria: Criteria,
 		context: ApiContext = new ApiContext(),
 	): Promise<EntitySearchResult<object, Aggregations>> {
+		criteria.setLimit(1);
+
 		const response = await this.client.post<
 			EntitySearchResponse<object, Aggregations>
 		>(
-			`/aggregate/${this.entityName}`,
+			`/search/${this.entityName.replaceAll("_", "-")}`,
 			criteria.toPayload(),
 			context.toHeaders(),
 		);
@@ -110,7 +116,14 @@ export class EntityRepository<Entity extends object = object> {
 		context: ApiContext = new ApiContext(),
 	): Promise<void> {
 		await new SyncService(this.client).sync(
-			[new SyncOperation("upsert", this.entityName, "upsert", payload)],
+			[
+				new SyncOperation(
+					"upsert",
+					this.entityName.replaceAll("-", "_"),
+					"upsert",
+					payload,
+				),
+			],
 			context,
 		);
 	}
@@ -120,7 +133,14 @@ export class EntityRepository<Entity extends object = object> {
 		context: ApiContext = new ApiContext(),
 	): Promise<void> {
 		await new SyncService(this.client).sync(
-			[new SyncOperation("delete", this.entityName, "delete", payload)],
+			[
+				new SyncOperation(
+					"delete",
+					this.entityName.replaceAll("-", "_"),
+					"delete",
+					payload,
+				),
+			],
 			context,
 		);
 	}
@@ -130,7 +150,15 @@ export class EntityRepository<Entity extends object = object> {
 		context: ApiContext = new ApiContext(),
 	): Promise<void> {
 		await new SyncService(this.client).sync(
-			[new SyncOperation("delete", this.entityName, "delete", [], filters)],
+			[
+				new SyncOperation(
+					"delete",
+					this.entityName.replaceAll("-", "_"),
+					"delete",
+					[],
+					filters,
+				),
+			],
 			context,
 		);
 	}
