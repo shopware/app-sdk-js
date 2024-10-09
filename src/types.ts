@@ -28,3 +28,16 @@ export type ActionButtonRequest = {
 	};
 	meta: Meta;
 };
+
+export type EntityWrittenRequest<PrimaryKey = string> = {
+	data: {
+		event: string;
+		payload: {
+			entity: string;
+			operation: string;
+			primaryKey: PrimaryKey;
+			updatedFields: string[];
+			versionId: string;
+		}[];
+	};
+};
