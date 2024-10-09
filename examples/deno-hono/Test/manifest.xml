@@ -6,18 +6,23 @@
         <label lang="de-DE">Test</label>
         <description>Test</description>
         <description lang="de-DE">Test</description>
-        <author>Shyim</author>
-        <copyright>Shyim</copyright>
-        <version>0.0.12</version>
+        <author>Example</author>
+        <copyright>Example</copyright>
+        <version>0.0.1</version>
         <icon>icon.png</icon>
         <license>MIT</license>
     </meta>
     <setup>
-        <registrationUrl>https://sw-app-test.deno.dev/app/register</registrationUrl>
+        <registrationUrl>http://localhost:8000/app/register</registrationUrl>
         <secret>Test</secret>
     </setup>
+    <webhooks>
+        <webhook name="appActivate" url="http://localhost:8000/app/activate" event="app.activated"/>
+        <webhook name="appDeactivated" url="http://localhost:8000/app/deactivate" event="app.deactivated"/>
+        <webhook name="appDelete" url="http://localhost:8000/app/delete" event="app.deleted"/>
+    </webhooks>
     <admin>
-        <action-button action="test" entity="product" view="detail" url="https://sw-app-test.deno.dev/app/product">
+        <action-button action="test" entity="product" view="detail" url="http://localhost:8000/app/action-button">
             <label>Test</label>
         </action-button>
     </admin>
