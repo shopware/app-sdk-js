@@ -10,7 +10,7 @@ import {
 
 describe("Test Media helper", () => {
 	beforeAll(() => {
-		const mockedUuid = mock(() => "mocked-uuid");
+		const mockedUuid = mock(() => "86cdfacee53b47e1af39fbcd533222dd");
 
 		mock.module("./admin-api", () => {
 			return {
@@ -30,7 +30,7 @@ describe("Test Media helper", () => {
 				expect(data).toEqual([
 					new SyncOperation("upsert", "media_folder", "upsert", [
 						{
-							id: "mocked-uuid",
+							id: "86cdfacee53b47e1af39fbcd533222dd",
 							name: "test",
 							parentId: null,
 							configuration: {},
@@ -42,7 +42,7 @@ describe("Test Media helper", () => {
 		} as unknown as HttpClient;
 
 		const folderId = await createMediaFolder(client, "test", {});
-		expect(folderId).toBe("mocked-uuid");
+		expect(folderId).toBe("86cdfacee53b47e1af39fbcd533222dd");
 	});
 
 	test("create media folder with parent", async () => {
@@ -52,7 +52,7 @@ describe("Test Media helper", () => {
 				expect(data).toEqual([
 					new SyncOperation("upsert", "media_folder", "upsert", [
 						{
-							id: "mocked-uuid",
+							id: "86cdfacee53b47e1af39fbcd533222dd",
 							name: "test",
 							parentId: "parent-id",
 							configuration: {},
@@ -66,7 +66,7 @@ describe("Test Media helper", () => {
 		const folderId = await createMediaFolder(client, "test", {
 			parentId: "parent-id",
 		});
-		expect(folderId).toBe("mocked-uuid");
+		expect(folderId).toBe("86cdfacee53b47e1af39fbcd533222dd");
 	});
 
 	test("get folder id by name", async () => {
@@ -141,14 +141,14 @@ describe("Test Media helper", () => {
 		expect(requests[0]?.data).toEqual([
 			new SyncOperation("upsert", "media", "upsert", [
 				{
-					id: "mocked-uuid",
+					id: "86cdfacee53b47e1af39fbcd533222dd",
 					mediaFolderId: null,
 					private: false,
 				},
 			]),
 		]);
 		expect(requests[1]?.url).toBe(
-			"/_action/media/mocked-uuid/upload?extension=text&fileName=test",
+			"/_action/media/86cdfacee53b47e1af39fbcd533222dd/upload?extension=text&fileName=test",
 		);
 		expect(requests[1]?.data).toBeInstanceOf(Blob);
 	});
@@ -177,7 +177,7 @@ describe("Test Media helper", () => {
 
 				if (
 					url ===
-					"/_action/media/mocked-uuid/upload?extension=text&fileName=test"
+					"/_action/media/86cdfacee53b47e1af39fbcd533222dd/upload?extension=text&fileName=test"
 				) {
 					return Promise.reject(new Error("Test"));
 				}
@@ -199,21 +199,21 @@ describe("Test Media helper", () => {
 		expect(requests[0]?.data).toEqual([
 			new SyncOperation("upsert", "media", "upsert", [
 				{
-					id: "mocked-uuid",
+					id: "86cdfacee53b47e1af39fbcd533222dd",
 					mediaFolderId: null,
 					private: false,
 				},
 			]),
 		]);
 		expect(requests[1]?.url).toBe(
-			"/_action/media/mocked-uuid/upload?extension=text&fileName=test",
+			"/_action/media/86cdfacee53b47e1af39fbcd533222dd/upload?extension=text&fileName=test",
 		);
 		expect(requests[1]?.data).toBeInstanceOf(Blob);
 		expect(requests[2]?.url).toBe("/_action/sync");
 		expect(requests[2]?.data).toEqual([
 			new SyncOperation("delete", "media", "delete", [
 				{
-					id: "mocked-uuid",
+					id: "86cdfacee53b47e1af39fbcd533222dd",
 				},
 			]),
 		]);
