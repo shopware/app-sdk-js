@@ -57,6 +57,16 @@
 				"default": "./dist/commonjs/helper/uuid.js"
 			}
 		},
+		"./helper/media": {
+			"import": {
+				"types": "./dist/esm/helper/media.d.ts",
+				"default": "./dist/esm/helper/media.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/helper/media.d.ts",
+				"default": "./dist/commonjs/helper/media.js"
+			}
+		},
 		"./integration/hono": {
 			"import": {
 				"types": "./dist/esm/integration/hono.d.ts",
@@ -178,6 +188,7 @@
 			"./helper/criteria": "./src/helper/criteria.ts",
 			"./helper/admin-api": "./src/helper/admin-api.ts",
 			"./helper/uuid": "./src/helper/uuid.ts",
+			"./helper/media": "./src/helper/media.ts",
 			"./integration/hono": "./src/integration/hono.ts",
 			"./integration/cloudflare-kv": "./src/integration/cloudflare-kv.ts",
 			"./integration/deno-kv": "./src/integration/deno-kv.ts",
