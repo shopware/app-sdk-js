@@ -17,6 +17,9 @@ npm install @shopware-ag/app-server-sdk --save
 
 ## Example
 
+<details>
+  <summary>Bun Plain</summary>
+
 ```typescript
 import { AppServer, InMemoryShopRepository } from '@shopware-ag/app-server-sdk'
 import { createNotificationResponse } from '@shopware-ag/app-server-sdk/helper/app-actions'
@@ -55,8 +58,28 @@ const server = Bun.serve({
 console.log(`Listening on localhost:${server.port}`);
 ```
 
+</details>
+
 Checkout the [examples](./examples) folder for more examples using:
 
 - [Cloudflare Worker with Hono](./examples/cloudflare-hono)
 - [Deno with Hono](./examples/deno-hono)
 - [Node with Hono](./examples/node-hono)
+
+or use clone them as a starting point for your own project.
+
+```bash
+# Node.js
+npx tiged shopware/app-sdk-js/examples/node-hono demo-app
+
+# Bun
+npx tiged shopware/app-sdk-js/examples/bun-hono demo-app
+
+# Deno
+npx tiged shopware/app-sdk-js/examples/deno-hono demo-app
+
+# Cloudflare Worker
+npx tiged shopware/app-sdk-js/examples/cloudflare-hono demo-app
+```
+
+and then `cd demo-app` and `npm install` to install the dependencies.
