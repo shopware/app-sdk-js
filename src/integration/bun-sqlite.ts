@@ -8,6 +8,7 @@ export class BunSqliteRepository
 	db: Database;
 	constructor(fileName: string) {
 		this.db = new Database(fileName);
+		this.db.exec(`PRAGMA journal_mode = WAL;`);
 		this.db.exec(`
         CREATE TABLE IF NOT EXISTS shop (
           id TEXT PRIMARY KEY,
