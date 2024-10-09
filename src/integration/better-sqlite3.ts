@@ -25,7 +25,7 @@ export class BetterSqlite3Repository
 		const shop = await this.getShopById(id);
 
 		if (shop) {
-			return await this.updateShop(shop);
+			await this.deleteShop(id);
 		}
 
 		this.db

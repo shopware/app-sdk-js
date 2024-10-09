@@ -21,6 +21,7 @@ describe("Bun SQLite", async () => {
 		expect(repo.getShopById("test")).resolves.toBeNull();
 
 		await repo.createShop("test", "test", "test");
+		await repo.createShop("test", "test", "test");
 
 		expect(repo.getShopById("test")).resolves.not.toBeNull();
 
