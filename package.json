@@ -150,8 +150,8 @@
 		"url": "https://github.com/shopware/app-sdk-js"
 	},
 	"peerDependencies": {
-		"@aws-sdk/client-dynamodb": "~3.637",
-		"@aws-sdk/lib-dynamodb": "~3.637",
+		"@aws-sdk/client-dynamodb": "^3",
+		"@aws-sdk/lib-dynamodb": "^3",
 		"better-sqlite3": "^11",
 		"hono": "^4"
 	},
