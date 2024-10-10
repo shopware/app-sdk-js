@@ -79,7 +79,7 @@ describe("DynamoDB", async () => {
 		// @ts-expect-error
 		expect(cmd.input.Item).toEqual({
 			id: "a",
-			active: true,
+			active: false,
 			url: "b",
 			secret: "c",
 			clientId: null,
@@ -114,7 +114,7 @@ describe("DynamoDB", async () => {
 		// @ts-expect-error
 		expect(cmd.input.Item).toEqual({
 			id: "a",
-			active: true,
+			active: false,
 			url: "b",
 			secret: "c",
 			clientId: null,

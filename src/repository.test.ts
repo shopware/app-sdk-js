@@ -10,11 +10,11 @@ describe("Repository", async () => {
 		expect(shop.getShopSecret()).toBe("test");
 		expect(shop.getShopClientId()).toBeNull();
 		expect(shop.getShopClientSecret()).toBeNull();
-		expect(shop.getShopActive()).toBe(true);
-
-		shop.setShopActive(false);
-
 		expect(shop.getShopActive()).toBe(false);
+
+		shop.setShopActive(true);
+
+		expect(shop.getShopActive()).toBe(true);
 
 		shop.setShopCredentials("test", "test");
 

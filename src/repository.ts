@@ -35,7 +35,7 @@ export class SimpleShop implements ShopInterface {
 	private shopSecret: string;
 	private shopClientId: string | null;
 	private shopClientSecret: string | null;
-	private shopActive = true;
+	private shopActive = false;
 
 	constructor(shopId: string, shopUrl: string, shopSecret: string) {
 		this.shopId = shopId;
