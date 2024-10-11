@@ -21,7 +21,7 @@ export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
 			TableName: this.tableName,
 			Item: {
 				id: id,
-				active: true,
+				active: false,
 				url: url,
 				secret: secret,
 				clientId: null,
