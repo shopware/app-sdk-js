@@ -131,11 +131,12 @@ describe("Test Media helper", () => {
 			},
 		} as unknown as HttpClient;
 
-		await uploadMediaFile(client, {
+		const response = await uploadMediaFile(client, {
 			file: new Blob(["test"], { type: "text/plain" }),
 			fileName: "test.text",
 		});
 
+		expect(typeof response).toBe("string");
 		expect(requests).toBeArrayOfSize(2);
 		expect(requests[0]?.url).toBe("/_action/sync");
 		expect(requests[0]?.data).toEqual([
