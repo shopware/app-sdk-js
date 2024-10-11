@@ -11,6 +11,7 @@ import { Criteria } from "./criteria.js";
  * @param {string} [options.mediaFolderId] - The ID of the media folder to upload the file to.
  * @param {string} options.fileName - The name of the file to upload.
  * @param {Blob|Promise<Blob>} options.file - The file to upload.
+ * @returns {Promise<string>} - The ID of the uploaded media file.
  */
 export async function uploadMediaFile(
 	httpClient: HttpClient,
@@ -25,7 +26,7 @@ export async function uploadMediaFile(
 		fileName: string;
 		file: Blob | Promise<Blob>;
 	},
-) {
+): Promise<string> {
 	const repository = new EntityRepository(httpClient, "media");
 
 	const mediaId = uuid();
@@ -62,6 +63,8 @@ export async function uploadMediaFile(
 				"Content-Type": resolved.type,
 			},
 		);
+
+		return mediaId;
 	} catch (e) {
 		await repository.delete([{ id: mediaId }]);
 		throw e;
