@@ -1,12 +1,16 @@
-import { describe, expect, jest, test } from "bun:test";
+import { beforeEach, describe, expect, jest, test } from "bun:test";
 import { AppServer } from "../src/app.js";
-import { InMemoryShopRepository, SimpleShop } from "../src/repository.js";
+import { InMemoryShopRepository, type SimpleShop } from "../src/repository.js";
 
 describe("Registration", async () => {
-	const app = new AppServer(
-		{ appName: "test", appSecret: "test", authorizeCallbackUrl: "test" },
-		new InMemoryShopRepository(),
-	);
+	let app: AppServer<SimpleShop>;
+
+	beforeEach(() => {
+		app = new AppServer(
+			{ appName: "test", appSecret: "test", authorizeCallbackUrl: "test" },
+			new InMemoryShopRepository(),
+		);
+	});
 
 	test("authorize: invalid request", async () => {
 		const resp = await app.registration.authorize(
@@ -46,16 +50,59 @@ describe("Registration", async () => {
 		);
 
 		expect(resp.status).toBe(400);
+		expect(resp.json()).resolves.toEqual({ message: "Invalid Request" });
 	});
 
 	test("authorizeCallback: shop does not exist", async () => {
 		const resp = await app.registration.authorizeCallback(
 			new Request("http://localhost", {
-				body: '{"shopId": "test", "apiKey": "test", "secretKey": "test"}',
+				body: '{"shopId": "1", "apiKey": "test", "secretKey": "test"}',
+				headers: {
+					"shopware-shop-signature":
+						"ecd078f3be7571ed7fe503ebd428dd79c653d108920986a0d936de4b1d371ced",
+				},
 			}),
 		);
 
-		expect(resp.status).toBe(400);
+		expect(resp.status).toBe(401);
+		expect(resp.json()).resolves.toEqual({ message: "Invalid shop given" });
+	});
+
+	test("authorizeCallback: rejeced", async () => {
+		await app.repository.createShop("1", "http://localhost", "test");
+
+		app.hooks.on("onAuthorize", async (event) => {
+			event.rejectRegistration("not you!");
+		});
+
+		const resp = await app.registration.authorizeCallback(
+			new Request("http://localhost", {
+				body: '{"shopId": "1", "apiKey": "test", "secretKey": "test"}',
+				headers: {
+					"shopware-shop-signature":
+						"ecd078f3be7571ed7fe503ebd428dd79c653d108920986a0d936de4b1d371ced",
+				},
+			}),
+		);
+
+		expect(resp.status).toBe(403);
+		expect(resp.json()).resolves.toEqual({ message: "not you!" });
+	});
+
+	test("authorizeCallback: success", async () => {
+		await app.repository.createShop("1", "http://localhost", "test");
+
+		const resp = await app.registration.authorizeCallback(
+			new Request("http://localhost", {
+				body: '{"shopId": "1", "apiKey": "test", "secretKey": "test"}',
+				headers: {
+					"shopware-shop-signature":
+						"ecd078f3be7571ed7fe503ebd428dd79c653d108920986a0d936de4b1d371ced",
+				},
+			}),
+		);
+
+		expect(resp.status).toBe(204);
 	});
 
 	test("activateShop", async () => {

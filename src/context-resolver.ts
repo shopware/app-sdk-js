@@ -7,7 +7,7 @@ import type { ShopInterface } from "./repository.js";
  * The context contains the shop, the payload and an instance of the HttpClient
  */
 export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
-	constructor(private app: AppServer) {}
+	constructor(private app: AppServer<Shop>) {}
 
 	/**
 	 * Create a context from a request body
