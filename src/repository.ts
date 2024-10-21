@@ -16,7 +16,9 @@ export interface ShopInterface {
  * ShopRepositoryInterface is the storage interface for the shops, you should implement this to save the shop data to your database
  * For testing cases the InMemoryShopRepository can be used
  */
-export interface ShopRepositoryInterface<Shop = ShopInterface> {
+export interface ShopRepositoryInterface<
+	Shop extends ShopInterface = ShopInterface,
+> {
 	createShop(id: string, url: string, secret: string): Promise<void>;
 
 	getShopById(id: string): Promise<Shop | null>;

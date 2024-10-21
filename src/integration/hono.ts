@@ -99,6 +99,11 @@ interface MiddlewareConfig {
 	shopRepository:
 		| ShopRepositoryInterface
 		| ((c: HonoContext) => ShopRepositoryInterface);
+
+	/**
+	 * A callback to setup the app server. It will be called after the app server is created and before the first request is handled
+	 */
+	setup?: (app: AppServer) => void;
 }
 
 /**
@@ -141,6 +146,10 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 				},
 				cfg.shopRepository,
 			);
+
+			if (cfg.setup) {
+				cfg.setup(app);
+			}
 		}
 
 		// @ts-ignore

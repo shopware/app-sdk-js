@@ -1,7 +1,8 @@
 import type { AppServer } from "./app.js";
+import type { ShopInterface } from "./repository.js";
 
-export class Registration {
-	constructor(private app: AppServer) {}
+export class Registration<Shop extends ShopInterface = ShopInterface> {
+	constructor(private app: AppServer<Shop>) {}
 
 	/**
 	 * This method checks the request for the handshake with the Shopware Shop.
@@ -84,6 +85,7 @@ export class Registration {
 			bodyContent,
 			shop.getShopSecret(),
 		);
+
 		if (!v) {
 			// Shop has failed the verify. Delete it from our DB
 			await this.app.repository.deleteShop(shop.getShopId());
@@ -92,6 +94,15 @@ export class Registration {
 		}
 
 		shop.setShopCredentials(body.apiKey, body.secretKey);
+
+		const event = new ShopAuthroizeEvent(req, shop);
+		await this.app.hooks.publish("onAuthorize", event);
+
+		if (event.reason) {
+			await this.app.repository.deleteShop(shop.getShopId());
+
+			return new InvalidRequestResponse(event.reason, 403);
+		}
 
 		await this.app.repository.updateShop(shop);
 
@@ -168,5 +179,22 @@ class InvalidRequestResponse extends Response {
 				"content-type": "application/json",
 			},
 		});
+	}
+}
+
+export class ShopAuthroizeEvent<Shop extends ShopInterface = ShopInterface> {
+	private reject: string | null = null;
+
+	constructor(
+		public request: Request,
+		public shop: Shop,
+	) {}
+
+	public rejectRegistration(reason: string) {
+		this.reject = reason;
+	}
+
+	public get reason() {
+		return this.reject;
 	}
 }
