@@ -52,6 +52,13 @@ interface MiddlewareConfig {
 	appActivateUrl?: string | null;
 
 	/**
+	 * The relative url of the app activation lifecycle endpoint
+	 *
+	 * @default "/app/update"
+	 */
+	appUpdateUrl?: string | null;
+
+	/**
 	 * The relative url of the app deactivation lifecycle endpoint
 	 *
 	 * @default "/app/deactivate"
@@ -219,6 +226,12 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 		const app = ctx.get("app");
 
 		return await app.registration.activate(ctx.req.raw);
+	});
+
+	hono.post(cfg.appUpdateUrl, async (ctx) => {
+		const app = ctx.get("app");
+
+		return await app.registration.update(ctx.req.raw);
 	});
 
 	hono.post(cfg.appDeactivateUrl, async (ctx) => {
