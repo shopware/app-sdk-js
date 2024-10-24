@@ -4,7 +4,7 @@ import { InMemoryShopRepository, type SimpleShop } from "../src/repository.js";
 import { Hooks } from "./hooks.js";
 import type { AppUninstallEvent } from "./registration.js";
 
-describe("Registration", async () => {
+describe("src/registration.ts", async () => {
 	let app: AppServer<SimpleShop>;
 	let hooks: Hooks;
 
@@ -111,7 +111,7 @@ describe("Registration", async () => {
 		expect(resp.status).toBe(204);
 	});
 
-	test("activateShop", async () => {
+	test("app activate", async () => {
 		await app.repository.createShop("1", "http://localhost", "test");
 
 		const shop = await app.repository.getShopById("1");
@@ -129,7 +129,7 @@ describe("Registration", async () => {
 		expect(shop?.getShopActive()).toBe(true);
 	});
 
-	test("deactivateShop", async () => {
+	test("app deactivate", async () => {
 		await app.repository.createShop("1", "http://localhost", "test");
 
 		const shop = await app.repository.getShopById("1");
@@ -147,7 +147,7 @@ describe("Registration", async () => {
 		expect(shop?.getShopActive()).toBe(false);
 	});
 
-	test("deletedShopKeepUserData", async () => {
+	test("app uninstall: keep user data", async () => {
 		await app.repository.createShop("1", "http://localhost", "test");
 
 		const shop = await app.repository.getShopById("1");
@@ -165,7 +165,7 @@ describe("Registration", async () => {
 		expect(app.repository.getShopById("1")).resolves.toEqual(shop);
 	});
 
-	test("deletedShopRemoveUserData", async () => {
+	test("app uninstall: remove user data", async () => {
 		await app.repository.createShop("1", "http://localhost", "test");
 
 		const shop = await app.repository.getShopById("1");

@@ -130,6 +130,26 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	}
 
 	/**
+	 * This method should be called by Shopware when the app was installed.
+	 *
+	 * <webhooks>
+	 *   <webhook name="appInstall" url="http://localhost:3000/app/installed" event="app.installed"/>
+	 * </webhooks>
+	 */
+	public async install(req: Request): Promise<Response> {
+		const ctx = await this.app.contextResolver.fromAPI(req);
+
+		const event = new AppInstallEvent(
+			req,
+			ctx.shop,
+			ctx.payload?.data?.payload?.appVersion ?? null,
+		);
+		await this.app.hooks.publish("onAppInstall", event);
+
+		return new Response(null, { status: 204 });
+	}
+
+	/**
 	 * This method should be called by Shopware Shop to set the shop in-active.
 	 *
 	 * <webhooks>
@@ -159,7 +179,11 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	public async update(req: Request): Promise<Response> {
 		const ctx = await this.app.contextResolver.fromAPI(req);
 
-		const event = new AppUpdateEvent(req, ctx.shop);
+		const event = new AppUpdateEvent(
+			req,
+			ctx.shop,
+			ctx.payload?.data?.payload?.appVersion ?? null,
+		);
 		await this.app.hooks.publish("onAppUpdate", event);
 
 		return new Response(null, { status: 204 });
@@ -175,7 +199,11 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	public async delete(req: Request): Promise<Response> {
 		const ctx = await this.app.contextResolver.fromAPI(req);
 
-		const event = new AppUninstallEvent(req, ctx.shop);
+		const event = new AppUninstallEvent(
+			req,
+			ctx.shop,
+			ctx.payload?.data?.payload?.keepUserData ?? null,
+		);
 		await this.app.hooks.publish("onAppUninstall", event);
 
 		if (event.keepUserData === false) {
@@ -226,6 +254,14 @@ export class ShopAuthorizeEvent<Shop extends ShopInterface = ShopInterface> {
 	}
 }
 
+export class AppInstallEvent<Shop extends ShopInterface = ShopInterface> {
+	constructor(
+		public request: Request,
+		public shop: Shop,
+		public appVersion: string | null = null,
+	) {}
+}
+
 export class AppActivateEvent<Shop extends ShopInterface = ShopInterface> {
 	constructor(
 		public request: Request,
@@ -244,14 +280,14 @@ export class AppUpdateEvent<Shop extends ShopInterface = ShopInterface> {
 	constructor(
 		public request: Request,
 		public shop: Shop,
+		public appVersion: string | null = null,
 	) {}
 }
 
 export class AppUninstallEvent<Shop extends ShopInterface = ShopInterface> {
-	public keepUserData: boolean | null = null;
-
 	constructor(
 		public request: Request,
 		public shop: Shop,
+		public keepUserData: boolean | null = null,
 	) {}
 }

@@ -1,6 +1,7 @@
 import type {
 	AppActivateEvent,
 	AppDeactivateEvent,
+	AppInstallEvent,
 	AppUninstallEvent,
 	AppUpdateEvent,
 	ShopAuthorizeEvent,
@@ -9,6 +10,7 @@ import type { ShopInterface } from "./repository.js";
 
 interface HookRegistry<Shop extends ShopInterface> {
 	onAuthorize: (event: ShopAuthorizeEvent<Shop>) => Promise<void>;
+	onAppInstall: (event: AppInstallEvent<Shop>) => Promise<void>;
 	onAppUninstall: (event: AppUninstallEvent<Shop>) => Promise<void>;
 	onAppActivate: (event: AppActivateEvent<Shop>) => Promise<void>;
 	onAppDeactivate: (event: AppDeactivateEvent<Shop>) => Promise<void>;
