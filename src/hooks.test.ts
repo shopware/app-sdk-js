@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, jest, test } from "bun:test";
 import { Hooks } from "./hooks.js";
-import { ShopAuthroizeEvent } from "./registration.js";
+import { ShopAuthorizeEvent } from "./registration.js";
 import { SimpleShop } from "./repository.js";
 
 describe("Hooks", () => {
@@ -21,7 +21,7 @@ describe("Hooks", () => {
 		const mockCallback = jest.fn().mockResolvedValue(new Response());
 		hooks.on("onAuthorize", mockCallback);
 
-		const mockEvent = new ShopAuthroizeEvent(
+		const mockEvent = new ShopAuthorizeEvent(
 			new Request("https://example.com"),
 			new SimpleShop("shop1", "http://localhost", "test"),
 		);
@@ -36,7 +36,7 @@ describe("Hooks", () => {
 		hooks.on("onAuthorize", mockCallback1);
 		hooks.on("onAuthorize", mockCallback2);
 
-		const mockEvent = new ShopAuthroizeEvent(
+		const mockEvent = new ShopAuthorizeEvent(
 			new Request("https://example.com"),
 			new SimpleShop("shop1", "http://localhost", "test"),
 		);
@@ -47,7 +47,7 @@ describe("Hooks", () => {
 	});
 
 	test("should not fail if no listeners are registered for an event", async () => {
-		const mockEvent = new ShopAuthroizeEvent(
+		const mockEvent = new ShopAuthorizeEvent(
 			new Request("https://example.com"),
 			new SimpleShop("shop1", "http://localhost", "test"),
 		);
@@ -58,7 +58,7 @@ describe("Hooks", () => {
 		const mockCallback = jest.fn().mockResolvedValue(new Response());
 		hooks.on("onAuthorize", mockCallback);
 
-		const mockEvent = new ShopAuthroizeEvent(
+		const mockEvent = new ShopAuthorizeEvent(
 			new Request("https://example.com"),
 			new SimpleShop("shop1", "http://localhost", "test"),
 		);

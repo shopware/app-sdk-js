@@ -87,7 +87,7 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 		);
 
 		if (!v) {
-			// Shop has failed the verify. Delete it from our DB
+			// Shop has failed the verification. Delete it from our DB.
 			await this.app.repository.deleteShop(shop.getShopId());
 
 			return new InvalidRequestResponse("Cannot validate app signature");
@@ -95,7 +95,7 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 
 		shop.setShopCredentials(body.apiKey, body.secretKey);
 
-		const event = new ShopAuthroizeEvent(req, shop);
+		const event = new ShopAuthorizeEvent(req, shop);
 		await this.app.hooks.publish("onAuthorize", event);
 
 		if (event.reason) {
@@ -119,6 +119,9 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	public async activate(req: Request): Promise<Response> {
 		const ctx = await this.app.contextResolver.fromAPI(req);
 
+		const event = new AppActivateEvent(req, ctx.shop);
+		await this.app.hooks.publish("onAppActivate", event);
+
 		ctx.shop.setShopActive(true);
 
 		await this.app.repository.updateShop(ctx.shop);
@@ -135,6 +138,9 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	 */
 	public async deactivate(req: Request): Promise<Response> {
 		const ctx = await this.app.contextResolver.fromAPI(req);
+
+		const event = new AppDeactivateEvent(req, ctx.shop);
+		await this.app.hooks.publish("onAppDeactivate", event);
 
 		ctx.shop.setShopActive(false);
 
@@ -153,7 +159,12 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	public async delete(req: Request): Promise<Response> {
 		const ctx = await this.app.contextResolver.fromAPI(req);
 
-		await this.app.repository.deleteShop(ctx.shop.getShopId());
+		const event = new AppUninstallEvent(req, ctx.shop);
+		await this.app.hooks.publish("onAppUninstall", event);
+
+		if (!event.keepShop) {
+			await this.app.repository.deleteShop(ctx.shop.getShopId());
+		}
 
 		return new Response(null, { status: 204 });
 	}
@@ -182,7 +193,7 @@ class InvalidRequestResponse extends Response {
 	}
 }
 
-export class ShopAuthroizeEvent<Shop extends ShopInterface = ShopInterface> {
+export class ShopAuthorizeEvent<Shop extends ShopInterface = ShopInterface>{
 	private reject: string | null = null;
 
 	constructor(
@@ -197,4 +208,27 @@ export class ShopAuthroizeEvent<Shop extends ShopInterface = ShopInterface> {
 	public get reason() {
 		return this.reject;
 	}
+}
+
+export class AppActivateEvent<Shop extends ShopInterface = ShopInterface> {
+	constructor(
+		public request: Request,
+		public shop: Shop,
+	) {}
+}
+
+export class AppDeactivateEvent<Shop extends ShopInterface = ShopInterface> {
+	constructor(
+		public request: Request,
+		public shop: Shop,
+	) {}
+}
+
+export class AppUninstallEvent<Shop extends ShopInterface = ShopInterface> {
+	public keepShop = false;
+
+	constructor(
+		public request: Request,
+		public shop: Shop,
+	) {}
 }
