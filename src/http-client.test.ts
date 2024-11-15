@@ -123,6 +123,7 @@ describe("HTTP Client", async () => {
 				accept: "application/json",
 			},
 			method: "POST",
+			redirect: "manual",
 		});
 
 		mockFetch.mockRestore();
@@ -130,9 +131,9 @@ describe("HTTP Client", async () => {
 
 	test("post: regular object", async () => {
 		const mockFetch = spyOn(global, "fetch").mockImplementation(() =>
-			Promise.resolve(
-				new Response('{"access_token": "test", "expires_in": 5000}'),
-			),
+				Promise.resolve(
+					new Response('{"access_token": "test", "expires_in": 5000}'),
+				),
 		);
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
@@ -152,6 +153,7 @@ describe("HTTP Client", async () => {
 				"content-type": "application/json",
 			},
 			method: "POST",
+			redirect: "manual",
 		});
 
 		mockFetch.mockRestore();
@@ -175,6 +177,29 @@ describe("HTTP Client", async () => {
 		expect(client.get("/test")).rejects.toThrowError(
 			"Request failed with error: test for shop with id: bla",
 		);
+
+		mockFetch.mockRestore();
+	});
+
+	test("redirect: not followed", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(() =>
+			Promise.resolve(
+				new Response('{"access_token": "test", "expires_in": 5000}'),
+			),
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
+
+		mockFetch.mockImplementation(() =>
+			Promise.resolve(
+				new Response(null, { status: 302, headers: { Location: "http://example.com" } }),
+			),
+		);
+
+		const response = await client.get("/test");
+
+		expect(response.statusCode).toBe(302);
+		expect(response.headers.get("Location")).toBe("http://example.com");
 
 		mockFetch.mockRestore();
 	});

@@ -105,6 +105,7 @@ export class HttpClient {
 				headers,
 			),
 			method,
+			redirect: "manual",
 		});
 
 		// Obtain new token
@@ -148,6 +149,7 @@ export class HttpClient {
 						client_id: this.shop.getShopClientId(),
 						client_secret: this.shop.getShopClientSecret(),
 					}),
+					redirect: "manual",
 				},
 			);
 
