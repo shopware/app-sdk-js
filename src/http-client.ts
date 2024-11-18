@@ -97,6 +97,7 @@ export class HttpClient {
 		headers: Record<string, string> = {},
 	): Promise<HttpClientResponse<ResponseType>> {
 		const f = await globalThis.fetch(`${this.shop.getShopUrl()}/api${url}`, {
+			redirect: "error",
 			body,
 			headers: Object.assign(
 				{
@@ -140,6 +141,7 @@ export class HttpClient {
 				`${this.shop.getShopUrl()}/api/oauth/token`,
 				{
 					method: "POST",
+					redirect: "error",
 					headers: {
 						"content-type": "application/json",
 					},

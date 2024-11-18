@@ -139,7 +139,6 @@ interface Sorting {
 	naturalSorting: boolean;
 	type?: string;
 }
-type GroupField = string;
 interface RequestParams {
 	ids?: string[];
 	page?: number;
