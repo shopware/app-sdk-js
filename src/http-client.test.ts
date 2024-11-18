@@ -118,6 +118,7 @@ describe("HTTP Client", async () => {
 		expect(mockFetch.mock.lastCall?.[0]).toBe("test/api/test");
 		expect(mockFetch.mock.lastCall?.[1]).toEqual({
 			body: form,
+			redirect: "error",
 			headers: {
 				Authorization: "Bearer test",
 				accept: "application/json",
@@ -146,6 +147,7 @@ describe("HTTP Client", async () => {
 		expect(mockFetch.mock.lastCall?.[0]).toBe("test/api/test");
 		expect(mockFetch.mock.lastCall?.[1]).toEqual({
 			body: JSON.stringify(form),
+			redirect: "error",
 			headers: {
 				Authorization: "Bearer test",
 				accept: "application/json",
