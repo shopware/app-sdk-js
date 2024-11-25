@@ -97,7 +97,7 @@ export class HttpClient {
 		headers: Record<string, string> = {},
 	): Promise<HttpClientResponse<ResponseType>> {
 		const f = await globalThis.fetch(`${this.shop.getShopUrl()}/api${url}`, {
-			redirect: "error",
+			redirect: "manual",
 			body,
 			headers: Object.assign(
 				{
@@ -107,6 +107,27 @@ export class HttpClient {
 			),
 			method,
 		});
+
+		if (f.status === 301 || f.status === 302) {
+			throw new ApiClientRequestFailed(
+				this.shop.getShopId(),
+				new HttpClientResponse<ShopwareErrorResponse>(
+					f.status,
+					{
+						errors: [
+							{
+								code: "301",
+								status: "301",
+								title: "301",
+								detail:
+									"Got a redirect response from the URL, the URL should point to the Shop without redirect",
+							},
+						],
+					},
+					f.headers,
+				),
+			);
+		}
 
 		// Obtain new token
 		if (!f.ok && f.status === 401) {
@@ -141,7 +162,7 @@ export class HttpClient {
 				`${this.shop.getShopUrl()}/api/oauth/token`,
 				{
 					method: "POST",
-					redirect: "error",
+					redirect: "manual",
 					headers: {
 						"content-type": "application/json",
 					},
@@ -152,6 +173,27 @@ export class HttpClient {
 					}),
 				},
 			);
+
+			if (auth.status === 301 || auth.status === 302) {
+				throw new ApiClientRequestFailed(
+					this.shop.getShopId(),
+					new HttpClientResponse<ShopwareErrorResponse>(
+						auth.status,
+						{
+							errors: [
+								{
+									code: "301",
+									status: "301",
+									title: "301",
+									detail:
+										"Got a redirect response from the URL, the URL should point to the Shop without redirect",
+								},
+							],
+						},
+						auth.headers,
+					),
+				);
+			}
 
 			if (!auth.ok) {
 				const contentType = auth.headers.get("content-type") || "text/plain";
