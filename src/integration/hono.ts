@@ -133,6 +133,8 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 	cfg.appDeactivateUrl = cfg.appDeactivateUrl || "/app/deactivate";
 	cfg.appDeleteUrl = cfg.appDeleteUrl || "/app/delete";
 	cfg.appPath = cfg.appPath || "/app/*";
+	cfg.appInstallUrl = cfg.appInstallUrl || "/app/install";
+	cfg.appUpdateUrl = cfg.appUpdateUrl || "/app/update";
 
 	cfg.appIframePath = cfg.appIframePath || "/client-api/*";
 

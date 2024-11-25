@@ -49,6 +49,7 @@ export class Hooks<Shop extends ShopInterface = ShopInterface> {
 		}
 
 		for (const cb of events) {
+			// @ts-expect-error
 			const res = cb(...args);
 
 			if (res instanceof Promise) {
