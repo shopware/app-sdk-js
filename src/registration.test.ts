@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, jest, test } from "bun:test";
 import { AppServer } from "../src/app.js";
 import { InMemoryShopRepository, type SimpleShop } from "../src/repository.js";
 import { Hooks } from "./hooks.js";
-import type { AppUninstallEvent } from "./registration.js";
+import type { AppUninstallEvent, ShopAuthorizeEvent } from "./registration.js";
 
 describe("src/registration.ts", async () => {
 	let app: AppServer<SimpleShop>;
@@ -77,7 +77,7 @@ describe("src/registration.ts", async () => {
 	test("authorizeCallback: rejeced", async () => {
 		await app.repository.createShop("1", "http://localhost", "test");
 
-		app.hooks.on("onAuthorize", async (event) => {
+		app.hooks.on("onAuthorize", async (event: ShopAuthorizeEvent) => {
 			event.rejectRegistration("not you!");
 		});
 

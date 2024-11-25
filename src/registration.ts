@@ -137,7 +137,9 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	 * </webhooks>
 	 */
 	public async install(req: Request): Promise<Response> {
-		const ctx = await this.app.contextResolver.fromAPI(req);
+		const ctx = await this.app.contextResolver.fromAPI<{
+			data: { payload: { appVersion: string } };
+		}>(req);
 
 		const event = new AppInstallEvent(
 			req,
@@ -177,7 +179,9 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	 * </webhooks>
 	 */
 	public async update(req: Request): Promise<Response> {
-		const ctx = await this.app.contextResolver.fromAPI(req);
+		const ctx = await this.app.contextResolver.fromAPI<{
+			data: { payload: { appVersion: string } };
+		}>(req);
 
 		const event = new AppUpdateEvent(
 			req,
@@ -197,7 +201,9 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	 * </webhooks>
 	 */
 	public async delete(req: Request): Promise<Response> {
-		const ctx = await this.app.contextResolver.fromAPI(req);
+		const ctx = await this.app.contextResolver.fromAPI<{
+			data: { payload: { keepUserData?: boolean } };
+		}>(req);
 
 		const event = new AppUninstallEvent(
 			req,
