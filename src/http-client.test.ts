@@ -118,7 +118,7 @@ describe("HTTP Client", async () => {
 		expect(mockFetch.mock.lastCall?.[0]).toBe("test/api/test");
 		expect(mockFetch.mock.lastCall?.[1]).toEqual({
 			body: form,
-			redirect: "error",
+			redirect: "manual",
 			headers: {
 				Authorization: "Bearer test",
 				accept: "application/json",
@@ -147,7 +147,7 @@ describe("HTTP Client", async () => {
 		expect(mockFetch.mock.lastCall?.[0]).toBe("test/api/test");
 		expect(mockFetch.mock.lastCall?.[1]).toEqual({
 			body: JSON.stringify(form),
-			redirect: "error",
+			redirect: "manual",
 			headers: {
 				Authorization: "Bearer test",
 				accept: "application/json",
@@ -176,6 +176,42 @@ describe("HTTP Client", async () => {
 
 		expect(client.get("/test")).rejects.toThrowError(
 			"Request failed with error: test for shop with id: bla",
+		);
+
+		mockFetch.mockRestore();
+	});
+
+	test("test authentification gets redirect", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(() =>
+			Promise.resolve(new Response("", { status: 301 })),
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
+
+		expect(client.get("/test")).rejects.toThrowError(
+			"Request failed with error: Got a redirect response from the URL, the URL should point to the Shop without redirect for shop with id: blaa",
+		);
+
+		mockFetch.mockRestore();
+	});
+
+	test("gets redirect on a api route", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementation(
+			(input, init) => {
+				if (input === "test/api/oauth/token") {
+					return Promise.resolve(
+						new Response('{"access_token": "test", "expires_in": 5000}'),
+					);
+				}
+
+				return Promise.resolve(new Response("", { status: 301 }));
+			},
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
+
+		expect(client.post("/test", {})).rejects.toThrowError(
+			"Request failed with error: Got a redirect response from the URL, the URL should point to the Shop without redirect for shop with id: blaa",
 		);
 
 		mockFetch.mockRestore();
