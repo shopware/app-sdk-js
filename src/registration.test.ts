@@ -1,15 +1,21 @@
 import { beforeEach, describe, expect, jest, test } from "bun:test";
 import { AppServer } from "../src/app.js";
 import { InMemoryShopRepository, type SimpleShop } from "../src/repository.js";
+import { Hooks } from "./hooks.js";
+import type { AppUninstallEvent } from "./registration.js";
 
-describe("Registration", async () => {
+describe("src/registration.ts", async () => {
 	let app: AppServer<SimpleShop>;
+	let hooks: Hooks;
 
 	beforeEach(() => {
 		app = new AppServer(
 			{ appName: "test", appSecret: "test", authorizeCallbackUrl: "test" },
 			new InMemoryShopRepository(),
 		);
+
+		hooks = new Hooks();
+		app.hooks = hooks;
 	});
 
 	test("authorize: invalid request", async () => {
@@ -105,7 +111,7 @@ describe("Registration", async () => {
 		expect(resp.status).toBe(204);
 	});
 
-	test("activateShop", async () => {
+	test("app activate", async () => {
 		await app.repository.createShop("1", "http://localhost", "test");
 
 		const shop = await app.repository.getShopById("1");
@@ -123,7 +129,7 @@ describe("Registration", async () => {
 		expect(shop?.getShopActive()).toBe(true);
 	});
 
-	test("deactivateShop", async () => {
+	test("app deactivate", async () => {
 		await app.repository.createShop("1", "http://localhost", "test");
 
 		const shop = await app.repository.getShopById("1");
@@ -141,12 +147,34 @@ describe("Registration", async () => {
 		expect(shop?.getShopActive()).toBe(false);
 	});
 
-	test("deletedShop", async () => {
+	test("app uninstall: keep user data", async () => {
 		await app.repository.createShop("1", "http://localhost", "test");
 
 		const shop = await app.repository.getShopById("1");
 
 		expect(shop).not.toBeNull();
+
+		app.contextResolver.fromAPI = jest.fn().mockResolvedValue({ shop });
+
+		const resp = await app.registration.delete(
+			new Request("http://localhost", { body: '{"source": {"shopId": "1"}}' }),
+		);
+
+		expect(resp.status).toBe(204);
+
+		expect(app.repository.getShopById("1")).resolves.toEqual(shop);
+	});
+
+	test("app uninstall: remove user data", async () => {
+		await app.repository.createShop("1", "http://localhost", "test");
+
+		const shop = await app.repository.getShopById("1");
+
+		expect(shop).not.toBeNull();
+
+		hooks.on("onAppUninstall", async (event: AppUninstallEvent) => {
+			event.keepUserData = false;
+		});
 
 		app.contextResolver.fromAPI = jest.fn().mockResolvedValue({ shop });
 

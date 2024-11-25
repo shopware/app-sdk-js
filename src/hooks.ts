@@ -1,8 +1,20 @@
-import type { ShopAuthroizeEvent } from "./registration.js";
+import type {
+	AppActivateEvent,
+	AppDeactivateEvent,
+	AppInstallEvent,
+	AppUninstallEvent,
+	AppUpdateEvent,
+	ShopAuthorizeEvent,
+} from "./registration.js";
 import type { ShopInterface } from "./repository.js";
 
 interface HookRegistry<Shop extends ShopInterface> {
-	onAuthorize: (event: ShopAuthroizeEvent<Shop>) => Promise<void>;
+	onAuthorize: (event: ShopAuthorizeEvent<Shop>) => Promise<void>;
+	onAppInstall: (event: AppInstallEvent<Shop>) => Promise<void>;
+	onAppUninstall: (event: AppUninstallEvent<Shop>) => Promise<void>;
+	onAppActivate: (event: AppActivateEvent<Shop>) => Promise<void>;
+	onAppDeactivate: (event: AppDeactivateEvent<Shop>) => Promise<void>;
+	onAppUpdate: (event: AppUpdateEvent<Shop>) => Promise<void>;
 }
 
 export class Hooks<Shop extends ShopInterface = ShopInterface> {

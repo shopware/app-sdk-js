@@ -45,11 +45,25 @@ interface MiddlewareConfig {
 	registerConfirmationUrl?: string | null;
 
 	/**
+	 * The relative url of the app installation lifecycle endpoint
+	 *
+	 * @default "/app/install"
+	 */
+	appInstallUrl?: string | null;
+
+	/**
 	 * The relative url of the app activation lifecycle endpoint
 	 *
 	 * @default "/app/activate"
 	 */
 	appActivateUrl?: string | null;
+
+	/**
+	 * The relative url of the app update lifecycle endpoint
+	 *
+	 * @default "/app/update"
+	 */
+	appUpdateUrl?: string | null;
 
 	/**
 	 * The relative url of the app deactivation lifecycle endpoint
@@ -215,10 +229,22 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 		return await app.registration.authorizeCallback(ctx.req.raw);
 	});
 
+	hono.post(cfg.appInstallUrl, async (ctx) => {
+		const app = ctx.get("app");
+
+		return await app.registration.install(ctx.req.raw);
+	});
+
 	hono.post(cfg.appActivateUrl, async (ctx) => {
 		const app = ctx.get("app");
 
 		return await app.registration.activate(ctx.req.raw);
+	});
+
+	hono.post(cfg.appUpdateUrl, async (ctx) => {
+		const app = ctx.get("app");
+
+		return await app.registration.update(ctx.req.raw);
 	});
 
 	hono.post(cfg.appDeactivateUrl, async (ctx) => {
