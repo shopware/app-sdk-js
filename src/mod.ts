@@ -8,3 +8,11 @@ export {
 	ApiClientRequestFailed,
 } from "./http-client.js";
 export { Context } from "./context-resolver.js";
+export type {
+	ShopAuthorizeEvent,
+	AppInstallEvent,
+	AppActivateEvent,
+	AppDeactivateEvent,
+	AppUpdateEvent,
+	AppUninstallEvent,
+} from "./registration.js";
