@@ -4,6 +4,7 @@ import {
 	DynamoDBDocumentClient,
 	GetCommand,
 	PutCommand,
+	UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { type ShopRepositoryInterface, SimpleShop } from "../repository.js";
 
@@ -69,15 +70,19 @@ export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
 	}
 
 	async updateShop(shop: SimpleShop): Promise<void> {
-		const cmd = new PutCommand({
+		const cmd = new UpdateCommand({
 			TableName: this.tableName,
-			Item: {
-				id: shop.getShopId(),
-				active: shop.getShopActive(),
-				url: shop.getShopUrl(),
-				secret: shop.getShopSecret(),
-				clientId: shop.getShopClientId(),
-				clientSecret: shop.getShopClientSecret(),
+			Key: { "id": { "S": shop.getShopId() } },
+			UpdateExpression: "SET active = :active, #u = :url, secret = :secret, clientId = :clientId, clientSecret = :clientSecret",
+			ExpressionAttributeNames: {
+				"#u": "url",
+			},
+			ExpressionAttributeValues: {
+				":active": { "BOOL": shop.getShopActive() },
+				":url": { "S": shop.getShopUrl() },
+				":secret": { "S": shop.getShopSecret() },
+				":clientId": { "S": shop.getShopClientId() },
+				":clientSecret": { "S": shop.getShopClientSecret() },
 			},
 		});
 
