@@ -115,7 +115,7 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	 * This method should be called by Shopware Shop to set the shop active.
 	 *
 	 * <webhooks>
-	 *   <webhook name="appActivate" url="http://localhost:3000/app/delete" event="app.activated"/>
+	 *   <webhook name="appActivate" url="http://localhost:3000/app/activate" event="app.activated"/>
 	 * </webhooks>
 	 */
 	public async activate(req: Request): Promise<Response> {
@@ -135,7 +135,7 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	 * This method should be called by Shopware when the app was installed.
 	 *
 	 * <webhooks>
-	 *   <webhook name="appInstall" url="http://localhost:3000/app/installed" event="app.installed"/>
+	 *   <webhook name="appInstall" url="http://localhost:3000/app/install" event="app.installed"/>
 	 * </webhooks>
 	 */
 	public async install(req: Request): Promise<Response> {
@@ -177,7 +177,7 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	 * This method should be called by Shopware when the app was updated.
 	 *
 	 * <webhooks>
-	 *   <webhook name="appUpdated" url="http://localhost:3000/app/updated" event="app.updated"/>
+	 *   <webhook name="appUpdated" url="http://localhost:3000/app/update" event="app.updated"/>
 	 * </webhooks>
 	 */
 	public async update(req: Request): Promise<Response> {
