@@ -2,7 +2,11 @@ import { describe, expect, mock, test } from "bun:test";
 import { DynamoDBRepository } from "./dynamodb.js";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import type { DeleteCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
+import type {
+	DeleteCommand,
+	PutCommand,
+	UpdateCommand,
+} from "@aws-sdk/lib-dynamodb";
 import { SimpleShop } from "../repository.js";
 
 describe("DynamoDB", async () => {
@@ -88,14 +92,14 @@ describe("DynamoDB", async () => {
 	});
 
 	test("updateShop", async () => {
-		let cmd: PutCommand;
+		let cmd: UpdateCommand;
 
 		mock.module("@aws-sdk/lib-dynamodb", () => {
 			return {
 				DynamoDBDocumentClient: {
 					from() {
 						return {
-							async send(inner: PutCommand) {
+							async send(inner: UpdateCommand) {
 								cmd = inner;
 								return {};
 							},
@@ -112,13 +116,12 @@ describe("DynamoDB", async () => {
 		// @ts-expect-error
 		expect(cmd).toBeDefined();
 		// @ts-expect-error
-		expect(cmd.input.Item).toEqual({
-			id: "a",
-			active: false,
-			url: "b",
-			secret: "c",
-			clientId: null,
-			clientSecret: null,
+		expect(cmd.input.ExpressionAttributeValues).toEqual({
+			":active": false,
+			":url": "b",
+			":secret": "c",
+			":clientId": null,
+			":clientSecret": null,
 		});
 	});
 
