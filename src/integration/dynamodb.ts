@@ -72,17 +72,18 @@ export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
 	async updateShop(shop: SimpleShop): Promise<void> {
 		const cmd = new UpdateCommand({
 			TableName: this.tableName,
-			Key: { "id": { "S": shop.getShopId() } },
-			UpdateExpression: "SET active = :active, #u = :url, secret = :secret, clientId = :clientId, clientSecret = :clientSecret",
+			Key: { id: shop.getShopId() },
+			UpdateExpression:
+				"SET active = :active, #u = :url, secret = :secret, clientId = :clientId, clientSecret = :clientSecret",
 			ExpressionAttributeNames: {
 				"#u": "url",
 			},
 			ExpressionAttributeValues: {
-				":active": { "BOOL": shop.getShopActive() },
-				":url": { "S": shop.getShopUrl() },
-				":secret": { "S": shop.getShopSecret() },
-				":clientId": { "S": shop.getShopClientId() },
-				":clientSecret": { "S": shop.getShopClientSecret() },
+				":active": shop.getShopActive(),
+				":url": shop.getShopUrl(),
+				":secret": shop.getShopSecret(),
+				":clientId": shop.getShopClientId(),
+				":clientSecret": shop.getShopClientSecret(),
 			},
 		});
 
