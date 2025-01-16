@@ -50,6 +50,76 @@ describe("src/registration.ts", async () => {
 		expect(resp.status).toBe(200);
 	});
 
+	const sanitizeShopUrlTestCases = [
+		{
+			input: "https://my-shop.com:80",
+			expected: "https://my-shop.com:80",
+		},
+		{
+			input: "https://my-shop.com:8080/",
+			expected: "https://my-shop.com:8080",
+		},
+		{
+			input: "https://my-shop.com:8080//test/",
+			expected: "https://my-shop.com:8080/test",
+		},
+		{
+			input: "https://my-shop.com",
+			expected: "https://my-shop.com",
+		},
+		{
+			input: "https://my-shop.com/",
+			expected: "https://my-shop.com",
+		},
+		{
+			input: "https://my-shop.com/test/",
+			expected: "https://my-shop.com/test",
+		},
+		{
+			input: "https://my-shop.com//test",
+			expected: "https://my-shop.com/test",
+		},
+		{
+			input: "https://my-shop.com//test/",
+			expected: "https://my-shop.com/test",
+		},
+		{
+			input: "https://my-shop.com///test/",
+			expected: "https://my-shop.com/test",
+		},
+		{
+			input: "https://my-shop.com///test/test1//test2",
+			expected: "https://my-shop.com/test/test1/test2",
+		},
+		{
+			input: "https://my-shop.com///test/test1//test2/",
+			expected: "https://my-shop.com/test/test1/test2",
+		},
+		{
+			input: "https://my-shop.com///test/test1//test2//",
+			expected: "https://my-shop.com/test/test1/test2",
+		},
+	];
+
+	test.each(sanitizeShopUrlTestCases)(
+		"authorize: sanitize shop urls ($input => $expected)",
+		async ({ input, expected }) => {
+			app.signer.verify = jest.fn().mockResolvedValue(true);
+
+			const resp = await app.registration.authorize(
+				new Request(
+					`http://localhost?shop-url=${input}&shop-id=test&timestamp=test`,
+					{ headers: new Headers({ "shopware-app-signature": "test" }) },
+				),
+			);
+			expect(resp.status).toEqual(200);
+
+			const shop = await app.repository.getShopById("test");
+
+			expect(shop?.getShopUrl()).toEqual(expected);
+		},
+	);
+
 	test("authorizeCallback: invalid request", async () => {
 		const resp = await app.registration.authorizeCallback(
 			new Request("http://localhost", { body: "{}" }),

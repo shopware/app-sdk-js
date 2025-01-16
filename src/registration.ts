@@ -22,9 +22,7 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 		}
 
 		const shopId = url.searchParams.get("shop-id") as string;
-		const shopUrl = (url.searchParams.get("shop-url") as string)
-			.toString()
-			.replace(/\/+$/, "");
+		const shopUrl = url.searchParams.get("shop-url") as string;
 		const timestamp = url.searchParams.get("timestamp") as string;
 
 		const v = await this.app.signer.verify(
@@ -38,8 +36,11 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 		}
 
 		const shopSecret = randomString();
+		const sanitizedShopUrl = shopUrl
+			.replace(/([^:])(\/\/+)/g, "$1/")
+			.replace(/\/+$/, "");
 
-		await this.app.repository.createShop(shopId, shopUrl, shopSecret);
+		await this.app.repository.createShop(shopId, sanitizedShopUrl, shopSecret);
 
 		return new Response(
 			JSON.stringify({
