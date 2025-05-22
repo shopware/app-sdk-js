@@ -158,7 +158,48 @@ interface RequestParams {
 	"total-count-mode"?: TotalCountMode;
 }
 
-export class Criteria {
+// Type utilities for enhanced type safety with nested paths
+type DeepNonNullable<T> = T extends object
+	? {
+			[P in keyof T]: DeepNonNullable<NonNullable<T[P]>>;
+		}
+	: NonNullable<T>;
+
+type MakeRequired<T, K extends keyof T> = Omit<T, K> & {
+	[P in K]-?: DeepNonNullable<T[P]>;
+};
+
+// Type for handling nested paths
+type NestedMakeRequired<
+	T,
+	Path extends string,
+> = Path extends `${infer First}.${infer Rest}`
+	? First extends keyof T
+		? Omit<T, First> & {
+				[K in First]-?: NestedMakeRequired<NonNullable<T[First]>, Rest>;
+			}
+		: T
+	: Path extends keyof T
+		? MakeRequired<T, Path>
+		: T;
+
+type PropertyType<T, K extends keyof T> = NonNullable<T[K]>;
+
+// Get nested property type
+type NestedPropertyType<
+	T,
+	Path extends string,
+> = Path extends `${infer First}.${infer Rest}`
+	? First extends keyof T
+		? NestedPropertyType<NonNullable<T[First]>, Rest>
+		: never
+	: Path extends keyof T
+		? NonNullable<T[Path]>
+		: never;
+
+export type Autoloadable<T> = T;
+
+export class Criteria<T = object> {
 	title: string | null;
 
 	page: number | null;
@@ -404,10 +445,23 @@ export class Criteria {
 	 * Ensures that a criterion is created for each segment of the passed path.
 	 * Existing Criteria objects are not overwritten.
 	 * Returns the own instance
+	 *
+	 * When used with a type parameter T, provides type-safe access to ensure fields are
+	 * defined when accessing results from a Repository search.
 	 */
+	// For direct field association
+	addAssociation<K extends keyof T & string>(
+		field: K,
+	): Criteria<MakeRequired<T, K>>;
+
+	// For nested path association
+	addAssociation<P extends string & `${string}.${string}`>(
+		path: P,
+	): Criteria<NestedMakeRequired<T, P>>;
+
+	// Implementation with traditional behavior
 	addAssociation(path: string): this {
 		this.getAssociation(path);
-
 		return this;
 	}
 
@@ -415,6 +469,15 @@ export class Criteria {
 	 * Ensures that a criterion is created for each segment of the passed path.
 	 * Returns the criteria instance of the last path segment
 	 */
+	// For direct field association
+	getAssociation<K extends keyof T & string>(
+		field: K,
+	): Criteria<PropertyType<T, K>>;
+
+	// For nested path association
+	getAssociation<P extends string>(path: P): Criteria<T>;
+
+	// Implementation with traditional behavior
 	getAssociation(path: string): Criteria {
 		const parts = path.split(".");
 

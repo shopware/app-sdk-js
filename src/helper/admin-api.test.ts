@@ -8,7 +8,7 @@ import {
 	SyncService,
 	uuid,
 } from "./admin-api.js";
-import { Criteria } from "./criteria.js";
+import { type Autoloadable, Criteria } from "./criteria.js";
 
 describe("Test UUID helper", () => {
 	test("should generate a valid UUID", () => {
@@ -43,6 +43,47 @@ describe("EntityRepository", () => {
 		expect(res.total).toBe(1);
 		expect(res.data).toEqual([]);
 		expect(res.first()).toBeNull();
+	});
+
+	test("search typed", async () => {
+		const client = {
+			post(url: string, data: unknown, headers: Record<string, string>) {
+				expect(url).toBe("/search/product");
+				return Promise.resolve({
+					body: {
+						total: 1,
+						data: [{ nested: { path: { id: "123" } }, tax: { rate: 5 } }],
+					},
+				});
+			},
+		} as unknown as HttpClient;
+
+		type Product = {
+			id: string;
+			name: string;
+			tax?: Autoloadable<{ rate: number }>;
+			nested?: Autoloadable<{
+				path?: Autoloadable<{
+					id: string;
+				}>;
+			}>;
+		};
+
+		const repository = new EntityRepository<Product>(client, "product");
+		const criteria = new Criteria<Product>()
+			.addAssociation("tax")
+			.addAssociation("nested.path");
+
+		const res = await repository.search(criteria);
+
+		const first = res.first();
+		expect(first).toBeDefined();
+		if (!first) {
+			throw new Error("First element is null");
+		}
+
+		first.tax.rate;
+		first.nested.path;
 	});
 
 	test("searchIds", async () => {
