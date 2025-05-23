@@ -58,27 +58,36 @@ export class EntityRepository<Entity extends object = object> {
 		this.entityName = entityName;
 	}
 
-	async search<Aggregations = object>(
-		criteria: Criteria,
+	/**
+	 * Search for entities with the given criteria
+	 *
+	 * When using Criteria<T>, the returned entities will have type-safe associations
+	 * based on which associations were added to the criteria.
+	 */
+	async search<T extends Entity, Aggregations = object>(
+		criteria: Criteria<T>,
 		context: ApiContext = new ApiContext(),
-	): Promise<EntitySearchResult<Entity, Aggregations>> {
+	): Promise<EntitySearchResult<T, Aggregations>> {
 		const response = await this.client.post<
-			EntitySearchResponse<Entity, Aggregations>
+			EntitySearchResponse<T, Aggregations>
 		>(
 			`/search/${this.entityName.replaceAll("_", "-")}`,
 			criteria.toPayload(),
 			context.toHeaders(),
 		);
 
-		return new EntitySearchResult<Entity, Aggregations>(
+		return new EntitySearchResult<T, Aggregations>(
 			response.body.total,
 			response.body.aggregations,
 			response.body.data,
 		);
 	}
 
+	/**
+	 * Search for entity IDs with the given criteria
+	 */
 	async searchIds(
-		criteria: Criteria,
+		criteria: Criteria<Entity>,
 		context: ApiContext = new ApiContext(),
 	): Promise<string[]> {
 		const response = await this.client.post<{ data: string[] }>(
@@ -90,8 +99,11 @@ export class EntityRepository<Entity extends object = object> {
 		return response.body.data;
 	}
 
+	/**
+	 * Aggregate entities with the given criteria
+	 */
 	async aggregate<Aggregations>(
-		criteria: Criteria,
+		criteria: Criteria<Entity>,
 		context: ApiContext = new ApiContext(),
 	): Promise<EntitySearchResult<object, Aggregations>> {
 		criteria.setLimit(1);
@@ -195,6 +207,12 @@ type EntitySearchResponse<Entity = unknown, Aggregations = object> = {
 	data: Entity[];
 };
 
+/**
+ * Result of an entity search operation
+ *
+ * Contains the search results with proper typing for associated entities
+ * when used with the enhanced Criteria<T> class.
+ */
 export class EntitySearchResult<Entity = unknown, Aggregations = object> {
 	constructor(
 		public total: number,
@@ -206,6 +224,12 @@ export class EntitySearchResult<Entity = unknown, Aggregations = object> {
 		this.data = data;
 	}
 
+	/**
+	 * Get the first result or null if no results
+	 *
+	 * The returned entity will be properly typed with all associations
+	 * that were added to the criteria.
+	 */
 	first(): Entity | null {
 		return this.data[0] || null;
 	}
