@@ -1,9 +1,10 @@
 import { getSignedCookie, setSignedCookie } from "hono/cookie";
 import { AppServer } from "../app.js";
-import type { Context } from "../context-resolver.js";
+import { Context } from "../context-resolver.js";
 import type { ShopInterface, ShopRepositoryInterface } from "../repository.js";
 
 import type { Hono, Context as HonoContext } from "hono";
+import { HttpClient } from "../http-client.js";
 
 declare module "hono" {
 	interface ContextVariableMap {
@@ -280,6 +281,8 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 			}
 
 			ctx.set("shop", shop);
+			// @ts-ignore
+			ctx.set("context", new Context(shop, {}, new HttpClient(shop)));
 
 			await next();
 		});

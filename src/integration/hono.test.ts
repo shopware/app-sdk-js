@@ -248,6 +248,7 @@ describe("Hono", async () => {
 		});
 
 		hono.get("/client-api/test", (c) => {
+			expect(c.get("context")).toBeDefined();
 			return c.json({ id: c.get("shop").getShopId() });
 		});
 
