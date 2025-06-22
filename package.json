@@ -152,7 +152,7 @@
 	"peerDependencies": {
 		"@aws-sdk/client-dynamodb": "^3",
 		"@aws-sdk/lib-dynamodb": "^3",
-		"better-sqlite3": "^11",
+		"better-sqlite3": "^11 || ^12",
 		"hono": "^4"
 	},
 	"peerDependenciesMeta": {
