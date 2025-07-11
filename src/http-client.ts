@@ -90,13 +90,17 @@ export class HttpClient {
 		return await this.request("DELETE", url, JSON.stringify(json), headers);
 	}
 
+	private getUrl(...parts: string[]): string {
+		return parts.map(part => part.replace(/^\/+|\/+$/g, "")).join("/");
+	}
+
 	private async request<ResponseType>(
 		method: string,
 		url: string,
 		body: string | FormData | Blob | null = "",
 		headers: Record<string, string> = {},
 	): Promise<HttpClientResponse<ResponseType>> {
-		const f = await globalThis.fetch(`${this.shop.getShopUrl()}/api${url}`, {
+		const f = await globalThis.fetch(this.getUrl(this.shop.getShopUrl(), "/api", url), {
 			redirect: "manual",
 			body,
 			headers: Object.assign(
