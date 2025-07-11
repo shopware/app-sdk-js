@@ -172,7 +172,7 @@
 	"devDependencies": {
 		"@aws-sdk/client-dynamodb": "~3.637",
 		"@aws-sdk/lib-dynamodb": "~3.637",
-		"@biomejs/biome": "1.8.3",
+		"@biomejs/biome": "2.1.1",
 		"@cloudflare/workers-types": "^4.20240821.1",
 		"@types/better-sqlite3": "^7.6.11",
 		"@types/bun": "^1.1.6",

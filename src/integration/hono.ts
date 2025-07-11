@@ -329,5 +329,11 @@ function jsonResponse(body: object, status = 200): Response {
 function buildBaseUrl(url: string): string {
 	const u = new URL(url);
 
-	return `${u.protocol}//${u.host}`;
+	let protocol = u.protocol;
+
+	if (typeof process !== "undefined" && process.env?.SHOPWARE_APP_SDK_FORCE_HTTPS) {
+		protocol = "https:";
+	}
+
+	return `${protocol}//${u.host}`;
 }
