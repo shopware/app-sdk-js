@@ -303,4 +303,44 @@ describe("Hono", async () => {
 			"https://example.com/?shop-id=a&shopware-shop-signature=8b523d99aeef5b456288fcec48236c3367a914c6b2c9fded63d81257ac019b25",
 		);
 	});
+
+	test("buildBaseUrl with HTTPS force", async () => {
+		const originalEnv = process.env.SHOPWARE_APP_SDK_FORCE_HTTPS;
+		
+		// Test with force HTTPS - successful register should have HTTPS confirmation URL
+		process.env.SHOPWARE_APP_SDK_FORCE_HTTPS = "true";
+		const honoHttps = new Hono();
+		configureAppServer(honoHttps, {
+			appName: "My App",
+			appSecret: "my-secret",
+			shopRepository: repo,
+		});
+
+		const resp = await honoHttps.fetch(
+			new Request(
+				"http://localhost/app/register?shop-id=123&shop-url=https://my-shop.com&timestamp=1234567890",
+				{
+					headers: new Headers({
+						"shopware-app-signature":
+							"96c91f86c822e11444b7a57b54ef125ed86b1a639c5360d45c5397daa8c3f70b",
+					}),
+				},
+			),
+		);
+
+		expect(resp.status).toBe(200);
+
+		const body = (await resp.json()) as { proof: string; secret: string; confirmation_url: string };
+		
+		expect(body).toBeObject();
+		expect(body.proof).not.toBeNull();
+		expect(body.confirmation_url).toStartWith("https://");
+
+		// Restore original env
+		if (originalEnv) {
+			process.env.SHOPWARE_APP_SDK_FORCE_HTTPS = originalEnv;
+		} else {
+			delete process.env.SHOPWARE_APP_SDK_FORCE_HTTPS;
+		}
+	});
 });
