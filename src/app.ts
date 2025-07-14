@@ -1,5 +1,6 @@
 import { ContextResolver } from "./context-resolver.js";
 import { Hooks } from "./hooks.js";
+import { HttpClientTokenCacheInterface, InMemoryHttpClientTokenCache } from "./http-client.js";
 import { Registration } from "./registration.js";
 import type { ShopInterface, ShopRepositoryInterface } from "./repository.js";
 import { WebCryptoHmacSigner } from "./signer.js";
@@ -16,9 +17,10 @@ export class AppServer<Shop extends ShopInterface = ShopInterface> {
 	constructor(
 		public cfg: Configuration,
 		public repository: ShopRepositoryInterface<Shop>,
+		public httpClientTokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache()
 	) {
 		this.registration = new Registration<Shop>(this);
-		this.contextResolver = new ContextResolver<Shop>(this);
+		this.contextResolver = new ContextResolver<Shop>(this, httpClientTokenCache);
 		this.signer = new WebCryptoHmacSigner();
 		this.hooks = new Hooks<Shop>();
 	}

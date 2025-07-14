@@ -4,13 +4,7 @@ import type { ShopInterface } from "./repository.js";
  * HttpClient is a simple wrapper around the fetch API, pre-configured with the shop's URL and access token
  */
 export class HttpClient {
-	private storage: { expiresIn: Date | null; token: string | null };
-
-	constructor(private shop: ShopInterface) {
-		this.storage = {
-			token: null,
-			expiresIn: null,
-		};
+	constructor(private shop: ShopInterface, private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache()) {
 	}
 
 	/**
@@ -135,7 +129,7 @@ export class HttpClient {
 
 		// Obtain new token
 		if (!f.ok && f.status === 401) {
-			this.storage.expiresIn = null;
+			this.tokenCache.clearToken(this.shop.getShopId());
 
 			return await this.request(method, url, body, headers);
 		}
@@ -161,7 +155,8 @@ export class HttpClient {
 	 * Obtain a valid bearer token
 	 */
 	async getToken(): Promise<string> {
-		if (this.storage.expiresIn === null) {
+		const cachedToken = await this.tokenCache.getToken(this.shop.getShopId());
+		if (cachedToken === null) {
 			const auth = await globalThis.fetch(
 				`${this.shop.getShopUrl()}/api/oauth/token`,
 				{
@@ -215,27 +210,31 @@ export class HttpClient {
 				);
 			}
 
-			const expireDate = new Date();
 			const authBody = (await auth.json()) as {
 				access_token: string;
 				expires_in: number;
 			};
-			this.storage.token = authBody.access_token;
-			expireDate.setSeconds(expireDate.getSeconds() + authBody.expires_in);
-			this.storage.expiresIn = expireDate;
 
-			return this.storage.token as string;
+			const expireDate = new Date();
+			expireDate.setSeconds(expireDate.getSeconds() + authBody.expires_in);
+
+			const token: HttpClientTokenCacheItem = {
+				token: authBody.access_token,
+				expiresIn: expireDate,
+			};
+
+			await this.tokenCache.setToken(this.shop.getShopId(), token);
+
+			return token.token;
 		}
 
-		if (this.storage.expiresIn.getTime() < new Date().getTime()) {
-			// Expired
-
-			this.storage.expiresIn = null;
+		if (cachedToken.expiresIn.getTime() < new Date().getTime()) {
+			await this.tokenCache.clearToken(this.shop.getShopId());
 
 			return await this.getToken();
 		}
 
-		return this.storage.token as string;
+		return cachedToken.token;
 	}
 }
 
@@ -285,4 +284,34 @@ export class ApiClientRequestFailed extends Error {
 
 		super(`Request failed with error: ${message} for shop with id: ${shopId}`);
 	}
+}
+
+export interface HttpClientTokenCacheItem {
+	token: string;
+	expiresIn: Date;
+}
+
+export class InMemoryHttpClientTokenCache implements HttpClientTokenCacheInterface {
+	private cache: Record<string, HttpClientTokenCacheItem> = {};
+
+	async getToken(shopId: string): Promise<HttpClientTokenCacheItem | null> {
+		return this.cache[shopId] || null;
+	}
+
+	async setToken(
+		shopId: string,
+		token: HttpClientTokenCacheItem,
+	): Promise<void> {
+		this.cache[shopId] = token;
+	}
+
+	async clearToken(shopId: string): Promise<void> {
+		delete this.cache[shopId];
+	}
+}
+
+export interface HttpClientTokenCacheInterface {
+	getToken(shopId: string): Promise<HttpClientTokenCacheItem | null>;
+	setToken(shopId: string, token: HttpClientTokenCacheItem): Promise<void>;
+	clearToken(shopId: string): Promise<void>;
 }

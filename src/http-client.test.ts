@@ -1,6 +1,27 @@
 import { describe, expect, mock, spyOn, test } from "bun:test";
-import { HttpClient } from "../src/http-client.js";
+import { HttpClient, InMemoryHttpClientTokenCache } from "../src/http-client.js";
 import { SimpleShop } from "../src/repository.js";
+
+describe("InMemoryHttpClientTokenCache", () => {
+  test("it stores, retrieves, and clears tokens", async () => {
+    const cache = new InMemoryHttpClientTokenCache();
+    const shopId = "test-shop";
+    const token = {
+      token: "test-token",
+      expiresIn: new Date(Date.now() + 3600 * 1000),
+    };
+
+    // Test setToken and getToken
+    await cache.setToken(shopId, token);
+    let cachedToken = await cache.getToken(shopId);
+    expect(cachedToken).toEqual(token);
+
+    // Test clearToken
+    await cache.clearToken(shopId);
+    cachedToken = await cache.getToken(shopId);
+    expect(cachedToken).toBeNull();
+  });
+});
 
 describe("HTTP Client", async () => {
 	test("getToken", async () => {

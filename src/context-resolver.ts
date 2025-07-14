@@ -1,5 +1,5 @@
 import type { AppServer } from "./app.js";
-import { HttpClient } from "./http-client.js";
+import { HttpClient, type HttpClientTokenCacheInterface } from "./http-client.js";
 import type { ShopInterface } from "./repository.js";
 
 /**
@@ -7,7 +7,7 @@ import type { ShopInterface } from "./repository.js";
  * The context contains the shop, the payload and an instance of the HttpClient
  */
 export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
-	constructor(private app: AppServer<Shop>) {}
+	constructor(private app: AppServer<Shop>, private httpClientTokenCache: HttpClientTokenCacheInterface) {}
 
 	/**
 	 * Create a context from a request body
@@ -52,7 +52,7 @@ export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
 		return new Context<Shop, Payload>(
 			shop as Shop,
 			webHookBody,
-			new HttpClient(shop),
+			new HttpClient(shop, this.httpClientTokenCache),
 		);
 	}
 
@@ -88,7 +88,7 @@ export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
 		return new Context<Shop, Payload>(
 			shop as Shop,
 			paramsObject as Payload,
-			new HttpClient(shop),
+			new HttpClient(shop, this.httpClientTokenCache),
 		);
 	}
 }
