@@ -4,7 +4,10 @@
 	"description": "App Server SDK for JavaScript",
 	"type": "module",
 	"license": "MIT",
-	"keywords": ["shopware", "app-server"],
+	"keywords": [
+		"shopware",
+		"app-server"
+	],
 	"exports": {
 		"./package.json": "./package.json",
 		".": {
@@ -65,6 +68,16 @@
 			"require": {
 				"types": "./dist/commonjs/helper/media.d.ts",
 				"default": "./dist/commonjs/helper/media.js"
+			}
+		},
+		"./helper/notification": {
+			"import": {
+				"types": "./dist/esm/helper/notification.d.ts",
+				"default": "./dist/esm/helper/notification.js"
+			},
+			"require": {
+				"types": "./dist/commonjs/helper/notification.d.ts",
+				"default": "./dist/commonjs/helper/notification.js"
 			}
 		},
 		"./integration/hono": {
@@ -141,7 +154,9 @@
 	"main": "./dist/commonjs/mod.js",
 	"module": "./dist/esm/mod.js",
 	"types": "./dist/commonjs/mod.d.ts",
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"publishConfig": {
 		"access": "public",
 		"provenance": true
@@ -189,6 +204,7 @@
 			"./helper/admin-api": "./src/helper/admin-api.ts",
 			"./helper/uuid": "./src/helper/uuid.ts",
 			"./helper/media": "./src/helper/media.ts",
+			"./helper/notification": "./src/helper/notification.ts",
 			"./integration/hono": "./src/integration/hono.ts",
 			"./integration/cloudflare-kv": "./src/integration/cloudflare-kv.ts",
 			"./integration/deno-kv": "./src/integration/deno-kv.ts",
@@ -197,7 +213,9 @@
 			"./integration/better-sqlite3": "./src/integration/better-sqlite3.ts",
 			"./types": "./src/types.ts"
 		},
-		"exclude": ["src/**/*.test.ts"]
+		"exclude": [
+			"src/**/*.test.ts"
+		]
 	},
 	"scripts": {
 		"init": "tshy && biome format . --write",
@@ -205,5 +223,8 @@
 		"lint:fix": "biome lint . --write && biome format . --write && biome check . --write",
 		"typecheck": "tsc --noEmit"
 	},
-	"trustedDependencies": ["@biomejs/biome", "better-sqlite3"]
+	"trustedDependencies": [
+		"@biomejs/biome",
+		"better-sqlite3"
+	]
 }
