@@ -4,7 +4,7 @@ import { Context } from "../context-resolver.js";
 import type { ShopInterface, ShopRepositoryInterface } from "../repository.js";
 
 import type { Hono, Context as HonoContext } from "hono";
-import { HttpClient } from "../http-client.js";
+import { HttpClient, type HttpClientTokenCacheInterface } from "../http-client.js";
 
 declare module "hono" {
 	interface ContextVariableMap {
@@ -116,6 +116,11 @@ interface MiddlewareConfig {
 		| ((c: HonoContext) => ShopRepositoryInterface);
 
 	/**
+	 * The token cache to use for the HttpClient. This is used to cache the access token for the shopware shop. If you don't provide a token cache, the HttpClient will use an in-memory cache.
+	 */
+	httpClientTokenCache: HttpClientTokenCacheInterface | ((c: HonoContext) => HttpClientTokenCacheInterface);
+
+	/**
 	 * A callback to setup the app server. It will be called after the app server is created and before the first request is handled
 	 */
 	setup?: (app: AppServer) => void;
@@ -155,6 +160,10 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 				cfg.appSecret = cfg.appSecret(ctx);
 			}
 
+			if (typeof cfg.httpClientTokenCache === "function") {
+				cfg.httpClientTokenCache = cfg.httpClientTokenCache(ctx);
+			}
+
 			app = new AppServer(
 				{
 					appName: cfg.appName,
@@ -162,6 +171,7 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 					authorizeCallbackUrl: appUrl + cfg.registerConfirmationUrl,
 				},
 				cfg.shopRepository,
+				cfg.httpClientTokenCache,
 			);
 
 			if (cfg.setup) {
@@ -282,7 +292,7 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 
 			ctx.set("shop", shop);
 			// @ts-ignore
-			ctx.set("context", new Context(shop, {}, new HttpClient(shop)));
+			ctx.set("context", new Context(shop, {}, new HttpClient(shop, ctx.get('app').httpClientTokenCache)));
 
 			await next();
 		});
