@@ -1,6 +1,6 @@
 import { describe, test, expect, jest } from "bun:test";
 import { sendNotification } from "./notification.js";
-import { HttpClient } from "./http-client.js";
+import { HttpClient } from "../http-client.js";
 
 describe("Notification", () => {
     test("should send a notification", async () => {
