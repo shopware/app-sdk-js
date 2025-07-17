@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, jest, test } from "bun:test";
 import { AppServer } from "../src/app.js";
 import { InMemoryShopRepository, type SimpleShop } from "../src/repository.js";
 import { Hooks } from "./hooks.js";
-import type { AppUninstallEvent, ShopAuthorizeEvent } from "./registration.js";
+import type { AppUninstallEvent, BeforeRegistrationEvent, ShopAuthorizeEvent } from "./registration.js";
 
 describe("src/registration.ts", async () => {
 	let app: AppServer<SimpleShop>;
@@ -119,6 +119,25 @@ describe("src/registration.ts", async () => {
 			expect(shop?.getShopUrl()).toEqual(expected);
 		},
 	);
+
+	test("authorize: Rejects if onBeforeRegistration event is canceled", async () => {
+		const vetoListener = jest.fn(async (event: BeforeRegistrationEvent) => {
+			event.rejectRegistration("I don't like your face");
+		});
+
+		app.hooks.on("onBeforeRegistrationEvent", vetoListener);
+
+		const resp = await app.registration.authorize(
+			new Request(
+				`http://localhost?shop-url=https://my-shop.com&shop-id=test&timestamp=test`,
+				{ headers: new Headers({ "shopware-app-signature": "test" }) },
+			),
+		);
+
+		expect(resp.status).toEqual(400);
+		expect(vetoListener).toHaveBeenCalled();
+		expect(await resp.json<{ message: string }>()).toEqual({ message: "I don't like your face" });
+	});
 
 	test("authorizeCallback: invalid request", async () => {
 		const resp = await app.registration.authorizeCallback(
