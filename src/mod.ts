@@ -15,4 +15,5 @@ export {
 	AppDeactivateEvent,
 	AppUpdateEvent,
 	AppUninstallEvent,
+	BeforeRegistrationEvent,
 } from "./registration.js";
