@@ -25,6 +25,13 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 		const shopUrl = url.searchParams.get("shop-url") as string;
 		const timestamp = url.searchParams.get("timestamp") as string;
 
+		const beforeRegistrationEvent = new BeforeRegistrationEvent(req, shopId, shopUrl);
+		this.app.hooks.publish('onBeforeRegistrationEvent', beforeRegistrationEvent);
+
+		if (beforeRegistrationEvent.reason) {
+			return new InvalidRequestResponse(beforeRegistrationEvent.reason, 400);
+		}
+
 		const v = await this.app.signer.verify(
 			req.headers.get("shopware-app-signature") as string,
 			`shop-id=${shopId}&shop-url=${shopUrl}&timestamp=${timestamp}`,
@@ -299,4 +306,22 @@ export class AppUninstallEvent<Shop extends ShopInterface = ShopInterface> {
 		public shop: Shop,
 		public keepUserData: boolean | null = null,
 	) {}
+}
+
+export class BeforeRegistrationEvent<Shop extends ShopInterface = ShopInterface> {
+	private cancellationReason: string | null = null;
+	
+	constructor(
+		public request: Request,
+		public shopId: string,
+		public shopUrl: string,
+	) {}
+
+	public rejectRegistration(reason: string) {
+		this.cancellationReason = reason;
+	}
+
+	public get reason() {
+		return this.cancellationReason;
+	}
 }

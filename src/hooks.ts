@@ -5,6 +5,7 @@ import type {
 	AppUninstallEvent,
 	AppUpdateEvent,
 	ShopAuthorizeEvent,
+	BeforeRegistrationEvent,
 } from "./registration.js";
 import type { ShopInterface } from "./repository.js";
 
@@ -15,6 +16,7 @@ interface HookRegistry<Shop extends ShopInterface> {
 	onAppActivate: (event: AppActivateEvent<Shop>) => Promise<void>;
 	onAppDeactivate: (event: AppDeactivateEvent<Shop>) => Promise<void>;
 	onAppUpdate: (event: AppUpdateEvent<Shop>) => Promise<void>;
+	onBeforeRegistrationEvent: (event: BeforeRegistrationEvent) => Promise<void>;
 }
 
 export class Hooks<Shop extends ShopInterface = ShopInterface> {
@@ -42,13 +44,13 @@ export class Hooks<Shop extends ShopInterface = ShopInterface> {
 		event: keyof HookRegistry<Shop>,
 		...args: Parameters<HookRegistry<Shop>[keyof HookRegistry<Shop>]>
 	): Promise<void> {
-		const events = this.eventListeners.get(event);
+		const listeners = this.eventListeners.get(event);
 
-		if (!events) {
+		if (!listeners) {
 			return;
 		}
 
-		for (const cb of events) {
+		for (const cb of listeners) {
 			// @ts-expect-error
 			const res = cb(...args);
 
