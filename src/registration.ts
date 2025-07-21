@@ -243,8 +243,8 @@ export function randomString(length = 120) {
 }
 
 class InvalidRequestResponse extends Response {
-	constructor(message: string, status = 401) {
-		super(JSON.stringify({ message }), {
+	constructor(error: string, status = 401) {
+		super(JSON.stringify({ error }), {
 			status,
 			headers: {
 				"content-type": "application/json",
