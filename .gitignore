@@ -3,6 +3,7 @@ node_modules
 dist
 npm
 bun.lockdb
+bun.lock
 /examples/*/.wrangler
 
 

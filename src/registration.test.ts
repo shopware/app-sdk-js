@@ -136,7 +136,7 @@ describe("src/registration.ts", async () => {
 
 		expect(resp.status).toEqual(400);
 		expect(vetoListener).toHaveBeenCalled();
-		expect(await resp.json<{ message: string }>()).toEqual({ message: "I don't like your face" });
+		expect(resp.json()).resolves.toEqual({ error: "I don't like your face" });
 	});
 
 	test("authorizeCallback: invalid request", async () => {
@@ -145,7 +145,7 @@ describe("src/registration.ts", async () => {
 		);
 
 		expect(resp.status).toBe(400);
-		expect(resp.json()).resolves.toEqual({ message: "Invalid Request" });
+		expect(resp.json()).resolves.toEqual({ error: "Invalid Request" });
 	});
 
 	test("authorizeCallback: shop does not exist", async () => {
@@ -160,7 +160,7 @@ describe("src/registration.ts", async () => {
 		);
 
 		expect(resp.status).toBe(401);
-		expect(resp.json()).resolves.toEqual({ message: "Invalid shop given" });
+		expect(resp.json()).resolves.toEqual({ error: "Invalid shop given" });
 	});
 
 	test("authorizeCallback: rejeced", async () => {
@@ -181,7 +181,7 @@ describe("src/registration.ts", async () => {
 		);
 
 		expect(resp.status).toBe(403);
-		expect(resp.json()).resolves.toEqual({ message: "not you!" });
+		expect(resp.json()).resolves.toEqual({ error: "not you!" });
 	});
 
 	test("authorizeCallback: success", async () => {
