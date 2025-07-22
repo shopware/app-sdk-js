@@ -4,7 +4,7 @@ import type { ShopInterface } from "./repository.js";
  * HttpClient is a simple wrapper around the fetch API, pre-configured with the shop's URL and access token
  */
 export class HttpClient {
-	constructor(private shop: ShopInterface, private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache()) {
+	constructor(private shop: ShopInterface, private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache(), private defaultTimeout: number = 0) {
 	}
 
 	/**
@@ -103,8 +103,10 @@ export class HttpClient {
 	): Promise<HttpClientResponse<ResponseType>> {
 		let signal : AbortSignal | null = null;
 
-		if (options.timeout) {
-			signal = AbortSignal.timeout(options.timeout);
+		let timeout = options.timeout || this.defaultTimeout;
+
+		if (timeout > 0) {
+			signal = AbortSignal.timeout(timeout);
 		}
 
 		const f = await globalThis.fetch(this.getUrl(this.shop.getShopUrl(), "/api", url), {

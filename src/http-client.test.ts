@@ -287,4 +287,46 @@ describe("HTTP Client", async () => {
 
 		mockFetch.mockRestore();
 	});
+
+	test("defaultTimeout: uses default timeout when no timeout option provided", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementation(() =>
+			Promise.resolve(
+				new Response('{"access_token": "test", "expires_in": 5000}'),
+			),
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"), new InMemoryHttpClientTokenCache(), 3000);
+
+		mockFetch.mockImplementation(() =>
+			Promise.resolve(new Response('{"data": "test"}')),
+		);
+
+		await client.get("/test");
+
+		// Verify that the signal was passed to fetch (indicating default timeout was used)
+		expect(mockFetch.mock.lastCall?.[1]?.signal).toBeDefined();
+
+		mockFetch.mockRestore();
+	});
+
+	test("defaultTimeout: explicit timeout overrides default timeout", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementation(() =>
+			Promise.resolve(
+				new Response('{"access_token": "test", "expires_in": 5000}'),
+			),
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"), new InMemoryHttpClientTokenCache(), 3000);
+
+		mockFetch.mockImplementation(() =>
+			Promise.resolve(new Response('{"data": "test"}')),
+		);
+
+		await client.get("/test", {}, { timeout: 5000 });
+
+		// Verify that the signal was passed to fetch
+		expect(mockFetch.mock.lastCall?.[1]?.signal).toBeDefined();
+
+		mockFetch.mockRestore();
+	});
 });
