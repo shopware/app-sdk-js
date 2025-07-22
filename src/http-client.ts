@@ -4,7 +4,7 @@ import type { ShopInterface } from "./repository.js";
  * HttpClient is a simple wrapper around the fetch API, pre-configured with the shop's URL and access token
  */
 export class HttpClient {
-	constructor(private shop: ShopInterface, private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache()) {
+	constructor(private shop: ShopInterface, private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache(), private defaultTimeout: number = 0) {
 	}
 
 	/**
@@ -13,8 +13,9 @@ export class HttpClient {
 	async get<ResponseType>(
 		url: string,
 		headers: Record<string, string> = {},
+		options: { timeout?: number } = {},
 	): Promise<HttpClientResponse<ResponseType>> {
-		return await this.request("GET", url, null, headers);
+		return await this.request("GET", url, null, headers, options);
 	}
 
 	/**
@@ -24,6 +25,7 @@ export class HttpClient {
 		url: string,
 		json: object | FormData | Blob = {},
 		headers: Record<string, string> = {},
+		options: { timeout?: number } = {},
 	): Promise<HttpClientResponse<ResponseType>> {
 		let data: object | FormData | Blob | string = json;
 
@@ -39,6 +41,7 @@ export class HttpClient {
 			url,
 			data as FormData | Blob | string,
 			headers,
+			options,
 		);
 	}
 
@@ -49,11 +52,12 @@ export class HttpClient {
 		url: string,
 		json: object = {},
 		headers: Record<string, string> = {},
+		options: { timeout?: number } = {},
 	): Promise<HttpClientResponse<ResponseType>> {
 		headers["content-type"] = "application/json";
 		headers.accept = "application/json";
 
-		return await this.request("PUT", url, JSON.stringify(json), headers);
+		return await this.request("PUT", url, JSON.stringify(json), headers, options);
 	}
 
 	/**
@@ -63,11 +67,12 @@ export class HttpClient {
 		url: string,
 		json: object = {},
 		headers: Record<string, string> = {},
+		options: { timeout?: number } = {},
 	): Promise<HttpClientResponse<ResponseType>> {
 		headers["content-type"] = "application/json";
 		headers.accept = "application/json";
 
-		return await this.request("PATCH", url, JSON.stringify(json), headers);
+		return await this.request("PATCH", url, JSON.stringify(json), headers, options);
 	}
 
 	/**
@@ -77,11 +82,12 @@ export class HttpClient {
 		url: string,
 		json: object = {},
 		headers: Record<string, string> = {},
+		options: { timeout?: number } = {},
 	): Promise<HttpClientResponse<ResponseType>> {
 		headers["content-type"] = "application/json";
 		headers.accept = "application/json";
 
-		return await this.request("DELETE", url, JSON.stringify(json), headers);
+		return await this.request("DELETE", url, JSON.stringify(json), headers, options);
 	}
 
 	private getUrl(...parts: string[]): string {
@@ -93,7 +99,16 @@ export class HttpClient {
 		url: string,
 		body: string | FormData | Blob | null = "",
 		headers: Record<string, string> = {},
+		options: { timeout?: number } = {},
 	): Promise<HttpClientResponse<ResponseType>> {
+		let signal : AbortSignal | null = null;
+
+		let timeout = options.timeout || this.defaultTimeout;
+
+		if (timeout > 0) {
+			signal = AbortSignal.timeout(timeout);
+		}
+
 		const f = await globalThis.fetch(this.getUrl(this.shop.getShopUrl(), "/api", url), {
 			redirect: "manual",
 			body,
@@ -104,6 +119,7 @@ export class HttpClient {
 				headers,
 			),
 			method,
+			signal
 		});
 
 		if (f.status === 301 || f.status === 302) {

@@ -145,6 +145,7 @@ describe("HTTP Client", async () => {
 				accept: "application/json",
 			},
 			method: "POST",
+			signal: null,
 		});
 
 		mockFetch.mockRestore();
@@ -175,6 +176,7 @@ describe("HTTP Client", async () => {
 				"content-type": "application/json",
 			},
 			method: "POST",
+			signal: null,
 		});
 
 		mockFetch.mockRestore();
@@ -234,6 +236,96 @@ describe("HTTP Client", async () => {
 		expect(client.post("/test", {})).rejects.toThrowError(
 			"Request failed with error: Got a redirect response from the URL, the URL should point to the Shop without redirect for shop with id: blaa",
 		);
+
+		mockFetch.mockRestore();
+	});
+
+	test("timeout: successful request with timeout option", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementation(() =>
+			Promise.resolve(
+				new Response('{"access_token": "test", "expires_in": 5000}'),
+			),
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
+
+		mockFetch.mockImplementation(() =>
+			Promise.resolve(new Response('{"data": "test"}')),
+		);
+
+		const result = await client.get("/test", {}, { timeout: 5000 });
+
+		expect(result).toEqual({
+			body: { data: "test" },
+			headers: new Headers(),
+			statusCode: 200,
+		});
+
+		// Verify that the signal was passed to fetch
+		expect(mockFetch.mock.lastCall?.[1]?.signal).toBeDefined();
+
+		mockFetch.mockRestore();
+	});
+
+	test("timeout: request times out and throws error", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(() =>
+			Promise.resolve(
+				new Response('{"access_token": "test", "expires_in": 5000}'),
+			),
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
+
+		// Mock fetch to simulate timeout
+		mockFetch.mockImplementation(() => {
+			const abortError = new Error("The operation was aborted");
+			abortError.name = "AbortError";
+			return Promise.reject(abortError);
+		});
+
+		expect(client.get("/test", {}, { timeout: 1 })).rejects.toThrow("The operation was aborted");
+
+		mockFetch.mockRestore();
+	});
+
+	test("defaultTimeout: uses default timeout when no timeout option provided", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementation(() =>
+			Promise.resolve(
+				new Response('{"access_token": "test", "expires_in": 5000}'),
+			),
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"), new InMemoryHttpClientTokenCache(), 3000);
+
+		mockFetch.mockImplementation(() =>
+			Promise.resolve(new Response('{"data": "test"}')),
+		);
+
+		await client.get("/test");
+
+		// Verify that the signal was passed to fetch (indicating default timeout was used)
+		expect(mockFetch.mock.lastCall?.[1]?.signal).toBeDefined();
+
+		mockFetch.mockRestore();
+	});
+
+	test("defaultTimeout: explicit timeout overrides default timeout", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementation(() =>
+			Promise.resolve(
+				new Response('{"access_token": "test", "expires_in": 5000}'),
+			),
+		);
+
+		const client = new HttpClient(new SimpleShop("blaa", "test", "test"), new InMemoryHttpClientTokenCache(), 3000);
+
+		mockFetch.mockImplementation(() =>
+			Promise.resolve(new Response('{"data": "test"}')),
+		);
+
+		await client.get("/test", {}, { timeout: 5000 });
+
+		// Verify that the signal was passed to fetch
+		expect(mockFetch.mock.lastCall?.[1]?.signal).toBeDefined();
 
 		mockFetch.mockRestore();
 	});
