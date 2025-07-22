@@ -145,6 +145,7 @@ describe("HTTP Client", async () => {
 				accept: "application/json",
 			},
 			method: "POST",
+			signal: AbortSignal.timeout(5000),
 		});
 
 		mockFetch.mockRestore();
@@ -175,6 +176,7 @@ describe("HTTP Client", async () => {
 				"content-type": "application/json",
 			},
 			method: "POST",
+			signal: AbortSignal.timeout(5000),
 		});
 
 		mockFetch.mockRestore();
