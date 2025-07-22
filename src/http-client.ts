@@ -4,7 +4,11 @@ import type { ShopInterface } from "./repository.js";
  * HttpClient is a simple wrapper around the fetch API, pre-configured with the shop's URL and access token
  */
 export class HttpClient {
-	constructor(private shop: ShopInterface, private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache()) {
+	constructor(
+		private shop: ShopInterface,
+		private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache(),
+		private timeoutMS: number = 5000,
+	) {
 	}
 
 	/**
@@ -104,6 +108,7 @@ export class HttpClient {
 				headers,
 			),
 			method,
+			signal: AbortSignal.timeout(this.timeoutMS),
 		});
 
 		if (f.status === 301 || f.status === 302) {
