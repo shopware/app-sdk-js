@@ -1,10 +1,22 @@
 import type { ShopInterface } from "./repository.js";
+import { Agent } from 'undici-types';
 
 /**
  * HttpClient is a simple wrapper around the fetch API, pre-configured with the shop's URL and access token
  */
 export class HttpClient {
-	constructor(private shop: ShopInterface, private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache(), private defaultTimeout: number = 0) {
+    private readonly agent: Agent;
+
+	constructor(
+        private shop: ShopInterface,
+        private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache(),
+        private defaultTimeout: number = 0,
+    ) {
+        this.agent = new Agent({
+            keepAliveTimeout: 30_000,
+            keepAliveMaxTimeout: 60_000,
+            pipelining: 0,
+        });
 	}
 
 	/**
@@ -119,7 +131,8 @@ export class HttpClient {
 				headers,
 			),
 			method,
-			signal
+			signal,
+            dispatcher: this.agent,
 		});
 
 		if (f.status === 301 || f.status === 302) {
