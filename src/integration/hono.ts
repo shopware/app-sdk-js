@@ -118,7 +118,7 @@ interface MiddlewareConfig {
 	/**
 	 * The token cache to use for the HttpClient. This is used to cache the access token for the shopware shop. If you don't provide a token cache, the HttpClient will use an in-memory cache.
 	 */
-	httpClientTokenCache: HttpClientTokenCacheInterface | ((c: HonoContext) => HttpClientTokenCacheInterface);
+	httpClientTokenCache?: HttpClientTokenCacheInterface | ((c: HonoContext) => HttpClientTokenCacheInterface);
 
 	/**
 	 * A callback to setup the app server. It will be called after the app server is created and before the first request is handled
