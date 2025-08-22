@@ -1,13 +1,10 @@
+/// <reference types="@cloudflare/workers-types" />
 import { SimpleShop } from "../repository.js";
 import type { ShopRepositoryInterface } from "../repository.js";
 
 /**
  * Cloudflare KV integration
  * @module
- */
-
-/**
- * Cloudflare KV implementation of the ShopRepositoryInterface
  */
 export class CloudflareShopRepository
 	implements ShopRepositoryInterface<SimpleShop>
@@ -17,36 +14,48 @@ export class CloudflareShopRepository
 	}
 
 	async createShop(id: string, url: string, secret: string): Promise<void> {
-		await this.storage.put(
-			id,
-			this.serializeShop(new SimpleShop(id, url, secret)),
-		);
+		await Promise.all([
+            this.storage.put(id, this.serializeShop(new SimpleShop(id, url, secret))),
+            this.storage.put(`${id}_active`, JSON.stringify(false)),
+        ])
 	}
 
 	async deleteShop(id: string): Promise<void> {
-		await this.storage.delete(id);
+		await Promise.all([
+            this.storage.delete(id),
+            this.storage.delete(`${id}_active`),
+            this.storage.delete(`${id}_credentials`)
+        ])
 	}
 
 	async getShopById(id: string): Promise<SimpleShop | null> {
-		const kvObj = await this.storage.get(id);
+		const kvValues = await Promise.all([
+            this.storage.get(id),
+            this.storage.get(`${id}_active`),
+            this.storage.get(`${id}_credentials`)
+        ]);
 
-		if (kvObj === null) {
+		if (kvValues[0] === null) {
 			return null;
 		}
 
-		return this.deserializeShop(kvObj);
+		return this.deserializeShop(kvValues);
 	}
 
 	async updateShop(shop: SimpleShop): Promise<void> {
-		await this.storage.put(shop.getShopId(), this.serializeShop(shop));
+		await Promise.all([
+            this.storage.put(shop.getShopId(), this.serializeShop(shop)),
+            this.storage.put(`${shop.getShopId()}_active`, JSON.stringify(shop.getShopActive())),
+            this.storage.put(`${shop.getShopId()}_credentials`, JSON.stringify({ clientId: shop.getShopClientId(), clientSecret: shop.getShopClientSecret() }))
+        ])
 	}
 
 	protected serializeShop(shop: SimpleShop): string {
 		return JSON.stringify(shop);
 	}
 
-	protected deserializeShop(data: string): SimpleShop {
-		const obj = JSON.parse(data);
+	protected deserializeShop(data: (string | null)[]): SimpleShop {
+		const obj = JSON.parse(data[0]!);
 
 		const shop = new SimpleShop(
 			obj.shopId || "",
@@ -61,6 +70,15 @@ export class CloudflareShopRepository
 		}
 
 		shop.setShopActive(obj.shopActive);
+
+		if (data[1] !== null) {
+			shop.setShopActive(JSON.parse(data[1]!));
+		}
+
+		if (data[2] !== null) {
+			const credentials = JSON.parse(data[2]!);
+			shop.setShopCredentials(credentials.clientId || "", credentials.clientSecret || "");
+		}
 
 		return shop;
 	}
