@@ -20,11 +20,11 @@ describe("Test Criteria class", () => {
 	test("add assosication", () => {
 		const criteria = new Criteria();
 
-		criteria.addAssociation("foo");
+		criteria.addAssociation("foo.bar");
 
 		const obj = criteria.toPayload();
 
-		expect(obj.associations).toEqual({ foo: {} });
+		expect(obj.associations).toEqual({ foo: { associations: { bar: {} } } });
 	});
 
 	test("add nested assosication", () => {
