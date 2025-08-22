@@ -2,14 +2,14 @@ import { describe, expect, mock, spyOn, test } from "bun:test";
 import { HttpClient, InMemoryHttpClientTokenCache } from "../src/http-client.js";
 import { SimpleShop } from "../src/repository.js";
 
-function createMockFetch(response: Response) {
-	const mockImpl = mock(() => Promise.resolve(response));
+function createMockFetch(responseBody: string, options?: ResponseInit) {
+	const mockImpl = mock(() => Promise.resolve(new Response(responseBody, options)));
 	Object.assign(mockImpl, { preconnect: () => {} });
 	return spyOn(global, "fetch").mockImplementation(mockImpl as unknown as typeof fetch);
 }
 
-function createMockFetchImpl(response: Response) {
-	const mockImpl = mock(() => Promise.resolve(response));
+function createMockFetchImpl(responseBody: string, options?: ResponseInit) {
+	const mockImpl = mock(() => Promise.resolve(new Response(responseBody, options)));
 	Object.assign(mockImpl, { preconnect: () => {} });
 	return mockImpl as unknown as typeof fetch;
 }
@@ -37,9 +37,7 @@ describe("InMemoryHttpClientTokenCache", () => {
 
 describe("HTTP Client", async () => {
 	test("getToken", async () => {
-		const mockFetch = createMockFetch(
-			new Response('{"access_token": "test", "expires_in": 3600}')
-		);
+		const mockFetch = createMockFetch('{"access_token": "test", "expires_in": 3600}');
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
 		expect(client.getToken()).resolves.toBe("test");
@@ -53,9 +51,7 @@ describe("HTTP Client", async () => {
 	});
 
 	test("getToken: failed request", async () => {
-		const mockFetch = createMockFetch(
-			new Response('{"error": "invalid_grant"}', { status: 400 })
-		);
+		const mockFetch = createMockFetch('{"error": "invalid_grant"}', { status: 400 });
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
 		expect(client.getToken()).rejects.toThrowError(
@@ -66,9 +62,7 @@ describe("HTTP Client", async () => {
 	});
 
 	test("getToken: expired refetch", async () => {
-		const mockFetch = createMockFetch(
-			new Response('{"access_token": "test", "expires_in": -500}')
-		);
+		const mockFetch = createMockFetch('{"access_token": "test", "expires_in": -500}');
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
 		expect(client.getToken()).resolves.toBe("test");
@@ -84,13 +78,13 @@ describe("HTTP Client", async () => {
 
 	test("get, post, put, patch, delete", async () => {
 		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
-			createMockFetchImpl(new Response('{"access_token": "test", "expires_in": 5000}'))
+			createMockFetchImpl('{"access_token": "test", "expires_in": 5000}')
 		);
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
 
 		mockFetch.mockImplementation(
-			createMockFetchImpl(new Response('{"data": "test"}'))
+			createMockFetchImpl('{"data": "test"}')
 		);
 
 		expect(client.get("/test")).resolves.toEqual({
@@ -125,9 +119,7 @@ describe("HTTP Client", async () => {
 	});
 
 	test("post: send a body data form data", async () => {
-		const mockFetch = createMockFetch(
-			new Response('{"access_token": "test", "expires_in": 5000}')
-		);
+		const mockFetch = createMockFetch('{"access_token": "test", "expires_in": 5000}');
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
 
@@ -154,9 +146,7 @@ describe("HTTP Client", async () => {
 	});
 
 	test("post: regular object", async () => {
-		const mockFetch = createMockFetch(
-			new Response('{"access_token": "test", "expires_in": 5000}')
-		);
+		const mockFetch = createMockFetch('{"access_token": "test", "expires_in": 5000}');
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
 
@@ -184,13 +174,13 @@ describe("HTTP Client", async () => {
 
 	test("get: request failed", async () => {
 		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
-			createMockFetchImpl(new Response('{"access_token": "test", "expires_in": 5000}'))
+			createMockFetchImpl('{"access_token": "test", "expires_in": 5000}')
 		);
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
 
 		mockFetch.mockImplementation(
-			createMockFetchImpl(new Response('{"errors": [{"detail": "test"}]}', { status: 400 }))
+			createMockFetchImpl('{"errors": [{"detail": "test"}]}', { status: 400 })
 		);
 
 		expect(client.get("/test")).rejects.toThrowError(
@@ -202,7 +192,7 @@ describe("HTTP Client", async () => {
 
 	test("test authentification gets redirect", async () => {
 		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
-			createMockFetchImpl(new Response("", { status: 301 }))
+			createMockFetchImpl("", { status: 301 })
 		);
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
@@ -236,14 +226,12 @@ describe("HTTP Client", async () => {
 	});
 
 	test("timeout: successful request with timeout option", async () => {
-		const mockFetch = createMockFetch(
-			new Response('{"access_token": "test", "expires_in": 5000}')
-		);
+		const mockFetch = createMockFetch('{"access_token": "test", "expires_in": 5000}');
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
 
 		mockFetch.mockImplementation(
-			createMockFetchImpl(new Response('{"data": "test"}'))
+			createMockFetchImpl('{"data": "test"}')
 		);
 
 		const result = await client.get("/test", {}, { timeout: 5000 });
@@ -262,7 +250,7 @@ describe("HTTP Client", async () => {
 
 	test("timeout: request times out and throws error", async () => {
 		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
-			createMockFetchImpl(new Response('{"access_token": "test", "expires_in": 5000}'))
+			createMockFetchImpl('{"access_token": "test", "expires_in": 5000}')
 		);
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
@@ -282,14 +270,12 @@ describe("HTTP Client", async () => {
 	});
 
 	test("defaultTimeout: uses default timeout when no timeout option provided", async () => {
-		const mockFetch = createMockFetch(
-			new Response('{"access_token": "test", "expires_in": 5000}')
-		);
+		const mockFetch = createMockFetch('{"access_token": "test", "expires_in": 5000}');
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"), new InMemoryHttpClientTokenCache(), 3000);
 
 		mockFetch.mockImplementation(
-			createMockFetchImpl(new Response('{"data": "test"}'))
+			createMockFetchImpl('{"data": "test"}')
 		);
 
 		await client.get("/test");
@@ -301,14 +287,12 @@ describe("HTTP Client", async () => {
 	});
 
 	test("defaultTimeout: explicit timeout overrides default timeout", async () => {
-		const mockFetch = createMockFetch(
-			new Response('{"access_token": "test", "expires_in": 5000}')
-		);
+		const mockFetch = createMockFetch('{"access_token": "test", "expires_in": 5000}');
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"), new InMemoryHttpClientTokenCache(), 3000);
 
 		mockFetch.mockImplementation(
-			createMockFetchImpl(new Response('{"data": "test"}'))
+			createMockFetchImpl('{"data": "test"}')
 		);
 
 		await client.get("/test", {}, { timeout: 5000 });

@@ -351,8 +351,8 @@ describe("Hono", async () => {
 		// Create an AppServer instance directly
 		const appServer = new AppServer(
 			{
-				appName: "Test App",
-				appSecret: "test-secret",
+				appName: "My App",
+				appSecret: "my-secret",
 				authorizeCallbackUrl: "http://localhost/app/register/confirm",
 			},
 			repo,
@@ -366,11 +366,11 @@ describe("Hono", async () => {
 		// Test that the registration endpoint works
 		const resp = await hono.fetch(
 			new Request(
-				"http://localhost/app/register?shop-id=a&shop-url=https://my-shop.com&timestamp=1234567890",
+				"http://localhost/app/register?shop-id=123&shop-url=https://my-shop.com&timestamp=1234567890",
 				{
 					headers: new Headers({
 						"shopware-app-signature":
-							"8b523d99aeef5b456288fcec48236c3367a914c6b2c9fded63d81257ac019b25",
+							"96c91f86c822e11444b7a57b54ef125ed86b1a639c5360d45c5397daa8c3f70b",
 					}),
 				},
 			),
