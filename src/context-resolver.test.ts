@@ -1,6 +1,7 @@
 import { describe, expect, jest, test } from "bun:test";
 import { AppServer } from "../src/app.js";
 import { ContextResolver } from "../src/context-resolver.js";
+import { InMemoryHttpClientTokenCache } from "../src/http-client.js";
 import { InMemoryShopRepository, SimpleShop } from "../src/repository.js";
 
 describe("Context Resolver", async () => {
@@ -15,7 +16,7 @@ describe("Context Resolver", async () => {
 
 	await app.repository.createShop("blaa", "test", "test");
 
-	const contextResolver = new ContextResolver(app);
+	const contextResolver = new ContextResolver(app, new InMemoryHttpClientTokenCache());
 
 	test("fromBrowser: shop does not exist", async () => {
 		expect(

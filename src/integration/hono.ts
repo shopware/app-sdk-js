@@ -16,16 +16,8 @@ declare module "hono" {
 	}
 }
 
-interface MiddlewareConfig {
-	/**
-	 * The name of the app
-	 */
-	appName: string | ((c: HonoContext) => string);
-	/**
-	 * The secret of the app. When the app is published in the Shopware Store, the Shopware Store provides this value.
-	 */
-	appSecret: string | ((c: HonoContext) => string);
-
+// Define a base interface with common parameters
+interface MiddlewareConfigBase {
 	/**
 	 * The URL of the app. This is the base URL of the app. This will automatically determined by default
 	 */
@@ -107,13 +99,36 @@ interface MiddlewareConfig {
 	 * }
 	 */
 	appIframeRedirects?: Record<string, string>;
+}
 
+// Define specific interfaces for each configuration option
+interface AppServerConfig {
+	/**
+	 * An already constructed AppServer instance. When provided, other parameters like appName and appSecret are not required.
+	 */
+	appServer: AppServer;
+}
+
+interface ParametersConfig {
+	/**
+	 * The name of the app
+	 */
+	appName: string | ((c: HonoContext) => string);
+	/**
+	 * The secret of the app. When the app is published in the Shopware Store, the Shopware Store provides this value.
+	 */
+	appSecret: string | ((c: HonoContext) => string);
 	/**
 	 * The repository to fetch and store the shop data
 	 */
 	shopRepository:
 		| ShopRepositoryInterface
 		| ((c: HonoContext) => ShopRepositoryInterface);
+	
+	/**
+	 * An already constructed AppServer instance. When provided, other parameters like appName and appSecret are not required.
+	 */
+	appServer?: undefined;
 
 	/**
 	 * The token cache to use for the HttpClient. This is used to cache the access token for the shopware shop. If you don't provide a token cache, the HttpClient will use an in-memory cache.
@@ -125,6 +140,11 @@ interface MiddlewareConfig {
 	 */
 	setup?: (app: AppServer) => void;
 }
+
+// Create a discriminated union type using intersection types
+type MiddlewareConfig = 
+	| (MiddlewareConfigBase & AppServerConfig)
+	| (MiddlewareConfigBase & ParametersConfig);
 
 /**
  * Configure the Hono server to handle the app registration and context resolution
@@ -146,36 +166,40 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 
 	hono.use("*", async (ctx, next) => {
 		if (app === null) {
-			const appUrl = cfg.appUrl || buildBaseUrl(ctx.req.url);
+			if (cfg.appServer) {
+				app = cfg.appServer;
+			} else {
+				const appUrl = cfg.appUrl || buildBaseUrl(ctx.req.url);
 
-			if (typeof cfg.shopRepository === "function") {
-				cfg.shopRepository = cfg.shopRepository(ctx);
-			}
+				if (typeof cfg.shopRepository === "function") {
+					cfg.shopRepository = cfg.shopRepository(ctx);
+				}
 
-			if (typeof cfg.appName === "function") {
-				cfg.appName = cfg.appName(ctx);
-			}
+				if (typeof cfg.appName === "function") {
+					cfg.appName = cfg.appName(ctx);
+				}
 
-			if (typeof cfg.appSecret === "function") {
-				cfg.appSecret = cfg.appSecret(ctx);
-			}
+				if (typeof cfg.appSecret === "function") {
+					cfg.appSecret = cfg.appSecret(ctx);
+				}
 
-			if (typeof cfg.httpClientTokenCache === "function") {
-				cfg.httpClientTokenCache = cfg.httpClientTokenCache(ctx);
-			}
+				if (typeof cfg.httpClientTokenCache === "function") {
+					cfg.httpClientTokenCache = cfg.httpClientTokenCache(ctx);
+				}
 
-			app = new AppServer(
-				{
-					appName: cfg.appName,
-					appSecret: cfg.appSecret,
-					authorizeCallbackUrl: appUrl + cfg.registerConfirmationUrl,
-				},
-				cfg.shopRepository,
-				cfg.httpClientTokenCache,
-			);
+				app = new AppServer(
+					{
+						appName: cfg.appName,
+						appSecret: cfg.appSecret,
+						authorizeCallbackUrl: appUrl + cfg.registerConfirmationUrl,
+					},
+					cfg.shopRepository,
+					cfg.httpClientTokenCache,
+				);
 
-			if (cfg.setup) {
-				cfg.setup(app);
+				if (cfg.setup) {
+					cfg.setup(app);
+				}
 			}
 		}
 

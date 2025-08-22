@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Hono } from "hono";
 import { InMemoryShopRepository } from "../repository.js";
+import { AppServer } from "../app.js";
 import { configureAppServer } from "./hono.js";
 
 describe("Hono", async () => {
@@ -342,5 +343,44 @@ describe("Hono", async () => {
 		} else {
 			delete process.env.SHOPWARE_APP_SDK_FORCE_HTTPS;
 		}
+	});
+
+	test("configure with AppServer instance", async () => {
+		const hono = new Hono();
+		
+		// Create an AppServer instance directly
+		const appServer = new AppServer(
+			{
+				appName: "Test App",
+				appSecret: "test-secret",
+				authorizeCallbackUrl: "http://localhost/app/register/confirm",
+			},
+			repo,
+		);
+
+		// Configure the Hono server with the AppServer instance
+		configureAppServer(hono, {
+			appServer: appServer as unknown as AppServer,
+		});
+
+		// Test that the registration endpoint works
+		const resp = await hono.fetch(
+			new Request(
+				"http://localhost/app/register?shop-id=a&shop-url=https://my-shop.com&timestamp=1234567890",
+				{
+					headers: new Headers({
+						"shopware-app-signature":
+							"8b523d99aeef5b456288fcec48236c3367a914c6b2c9fded63d81257ac019b25",
+					}),
+				},
+			),
+		);
+
+		expect(resp.status).toBe(200);
+
+		const body = (await resp.json()) as { proof: string };
+
+		expect(body).toBeObject();
+		expect(body.proof).not.toBeNull();
 	});
 });
