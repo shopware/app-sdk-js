@@ -1,6 +1,7 @@
 /// <reference types="@cloudflare/workers-types" />
 import { SimpleShop } from "../repository.js";
 import type { ShopRepositoryInterface } from "../repository.js";
+import type { HttpClientTokenCacheInterface, HttpClientTokenCacheItem } from "../http-client.js";
 
 /**
  * Cloudflare KV integration
@@ -81,5 +82,57 @@ export class CloudflareShopRepository
 		}
 
 		return shop;
+	}
+}
+
+/**
+ * Cloudflare KV implementation for HttpClientTokenCacheInterface
+ * @module
+ */
+export class CloudflareHttpClientTokenCache implements HttpClientTokenCacheInterface {
+	constructor(private storage: KVNamespace) {
+		this.storage = storage;
+	}
+
+	/**
+	 * Get a token from KV storage for the given shop ID
+	 */
+	async getToken(shopId: string): Promise<HttpClientTokenCacheItem | null> {
+		const tokenData = await this.storage.get(`token_${shopId}`);
+		
+		if (tokenData === null) {
+			return null;
+		}
+
+		try {
+			const parsedToken = JSON.parse(tokenData);
+			// Convert the ISO string back to a Date object
+			return {
+				token: parsedToken.token,
+				expiresIn: new Date(parsedToken.expiresIn)
+			};
+		} catch (error) {
+			return null;
+		}
+	}
+
+	/**
+	 * Store a token in KV storage for the given shop ID
+	 */
+	async setToken(shopId: string, token: HttpClientTokenCacheItem): Promise<void> {
+		// Convert the Date object to an ISO string for storage
+		const tokenData = {
+			token: token.token,
+			expiresIn: token.expiresIn.toISOString()
+		};
+		
+		await this.storage.put(`token_${shopId}`, JSON.stringify(tokenData));
+	}
+
+	/**
+	 * Remove a token from KV storage for the given shop ID
+	 */
+	async clearToken(shopId: string): Promise<void> {
+		await this.storage.delete(`token_${shopId}`);
 	}
 }
