@@ -1,7 +1,8 @@
 //
 import { describe, expect, test } from "bun:test";
-import { CloudflareShopRepository } from "../../src/integration/cloudflare-kv.js";
+import { CloudflareShopRepository, CloudflareHttpClientTokenCache } from "../../src/integration/cloudflare-kv.js";
 import { SimpleShop } from "../../src/repository.js";
+import type { HttpClientTokenCacheItem } from "../../src/http-client.js";
 
 describe("Cloudflare", async () => {
 	test("createShop", async () => {
@@ -163,6 +164,106 @@ describe("Cloudflare", async () => {
 
 		expect(retrieved).not.toBeNull();
 		expect(retrieved?.getShopActive()).toBe(false);
+	});
+
+	describe("CloudflareHttpClientTokenCache", async () => {
+		test("setToken stores token correctly", async () => {
+			const kv = new MockedKVNamespace();
+			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+
+			const expiresIn = new Date(Date.now() + 3600 * 1000); // 1 hour from now
+			const tokenItem: HttpClientTokenCacheItem = {
+				token: "test-token-123",
+				expiresIn: expiresIn
+			};
+
+			await tokenCache.setToken("test-shop", tokenItem);
+
+			const storedData = await kv.get("token_test-shop");
+			expect(storedData).not.toBeNull();
+
+			const parsedData = JSON.parse(storedData!);
+			expect(parsedData.token).toBe("test-token-123");
+			expect(parsedData.expiresIn).toBe(expiresIn.toISOString());
+		});
+
+		test("getToken retrieves token correctly", async () => {
+			const kv = new MockedKVNamespace();
+			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+
+			const expiresIn = new Date(Date.now() + 3600 * 1000);
+			const tokenData = {
+				token: "test-token-456",
+				expiresIn: expiresIn.toISOString()
+			};
+
+			await kv.put("token_test-shop", JSON.stringify(tokenData));
+
+			const retrievedToken = await tokenCache.getToken("test-shop");
+			expect(retrievedToken).not.toBeNull();
+			expect(retrievedToken?.token).toBe("test-token-456");
+			expect(retrievedToken?.expiresIn.getTime()).toBe(expiresIn.getTime());
+		});
+
+		test("getToken returns null for non-existent token", async () => {
+			const kv = new MockedKVNamespace();
+			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+
+			const retrievedToken = await tokenCache.getToken("non-existent-shop");
+			expect(retrievedToken).toBeNull();
+		});
+
+		test("getToken handles parsing errors gracefully", async () => {
+			const kv = new MockedKVNamespace();
+			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+
+			// Store invalid JSON data
+			await kv.put("token_bad-shop", "invalid-json-data");
+
+			const retrievedToken = await tokenCache.getToken("bad-shop");
+			expect(retrievedToken).toBeNull();
+		});
+
+		test("clearToken removes token from storage", async () => {
+			const kv = new MockedKVNamespace();
+			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+
+			const expiresIn = new Date(Date.now() + 3600 * 1000);
+			const tokenData = {
+				token: "test-token-789",
+				expiresIn: expiresIn.toISOString()
+			};
+
+			await kv.put("token_remove-test", JSON.stringify(tokenData));
+
+			// Verify token exists before clearing
+			expect(await kv.get("token_remove-test")).not.toBeNull();
+
+			await tokenCache.clearToken("remove-test");
+
+			// Verify token is removed
+			expect(await kv.get("token_remove-test")).toBeNull();
+		});
+
+		test("token key format uses correct prefix", async () => {
+			const kv = new MockedKVNamespace();
+			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+
+			const expiresIn = new Date(Date.now() + 3600 * 1000);
+			const tokenItem: HttpClientTokenCacheItem = {
+				token: "test-token",
+				expiresIn: expiresIn
+			};
+
+			await tokenCache.setToken("shop123", tokenItem);
+
+			// Check that the key uses the correct format
+			const storedData = await kv.get("token_shop123");
+			expect(storedData).not.toBeNull();
+
+			const keys = Array.from(kv.storage.keys());
+			expect(keys).toContain("token_shop123");
+		});
 	});
 });
 
