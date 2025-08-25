@@ -72,6 +72,68 @@ export async function uploadMediaFile(
 }
 
 /**
+ * Uploads a media file by URL to the Shopware instance.
+ *
+ * @param {HttpClient} httpClient - The HTTP client instance.
+ * @param {Object} options - The options for uploading the media file.
+ * @param {boolean} [options.private] - Whether the media file should be private.
+ * @param {string} [options.mediaFolderId] - The ID of the media folder to upload the file to.
+ * @param {string} options.fileName - The name of the file to upload.
+ * @param {string} options.url - The URL of the media file to upload.
+ * @returns {Promise<string>} - The ID of the uploaded media file.
+ */
+export async function uploadMediaByUrl(
+	httpClient: HttpClient,
+	{
+		private: isPrivate = false,
+		mediaFolderId = null,
+		fileName,
+		url,
+	}: {
+		private?: boolean;
+		mediaFolderId?: string | null;
+		fileName: string;
+		url: string;
+	},
+): Promise<string> {
+	const repository = new EntityRepository(httpClient, "media");
+
+	const mediaId = uuid();
+
+	await repository.upsert([
+		{
+			id: mediaId,
+			private: isPrivate,
+			mediaFolderId,
+		},
+	]);
+
+	const splitFileName = fileName.split(".");
+
+	if (splitFileName.length < 2) {
+		throw new Error("Invalid file name, should have an extension");
+	}
+
+	const extension = (splitFileName.slice(-1)[0] || "").toLowerCase();
+	const baseFileName = splitFileName.slice(0, -1).join(".");
+
+	try {
+		await httpClient.post(`/_action/media/${mediaId}/upload`, {
+			fileName: baseFileName,
+			extension,
+			url,
+		});
+	} catch (e) {
+		await repository.delete([{ id: mediaId }]);
+
+		throw e;
+	}
+
+	return mediaId;
+}
+
+
+/**
  * Retrieves the default media folder ID for a given entity.
  *
  * @param {HttpClient} httpClient - The HTTP client instance.
