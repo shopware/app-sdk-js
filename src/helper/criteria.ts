@@ -139,7 +139,7 @@ interface Sorting {
 	naturalSorting: boolean;
 	type?: string;
 }
-interface RequestParams {
+export interface RequestParams {
 	ids?: string[];
 	page?: number;
 	limit?: number;

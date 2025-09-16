@@ -45,6 +45,24 @@ describe("EntityRepository", () => {
 		expect(res.first()).toBeNull();
 	});
 
+	test("search with request params", async () => {
+		const client = {
+			post(url: string, data: unknown, headers: Record<string, string>) {
+				expect(url).toBe("/search/product");
+				return Promise.resolve({ body: { total: 1, data: [] } });
+			},
+		} as unknown as HttpClient;
+
+		const repository = new EntityRepository(client, "product");
+		const params = new Criteria().toPayload();
+
+		const res = await repository.search(params);
+
+		expect(res.total).toBe(1);
+		expect(res.data).toEqual([]);
+		expect(res.first()).toBeNull();
+	});
+
 	test("search typed", async () => {
 		const client = {
 			post(url: string, data: unknown, headers: Record<string, string>) {
