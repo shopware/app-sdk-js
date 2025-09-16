@@ -6,6 +6,8 @@ export {
 	HttpClientResponse,
 	ApiClientAuthenticationFailed,
 	ApiClientRequestFailed,
+	InMemoryHttpClientTokenCache,
+	HttpClientTokenCacheInterface
 } from "./http-client.js";
 export { Context } from "./context-resolver.js";
 export {
