@@ -1,5 +1,5 @@
 import type { HttpClient } from "../http-client.js";
-import type { Criteria } from "./criteria.js";
+import { Criteria, RequestParams } from "./criteria.js";
 import type { SingleFilter } from "./criteria.js";
 
 export class ApiContext {
@@ -65,14 +65,14 @@ export class EntityRepository<Entity extends object = object> {
 	 * based on which associations were added to the criteria.
 	 */
 	async search<T extends Entity, Aggregations = object>(
-		criteria: Criteria<T>,
+		criteria: Criteria<T> | RequestParams,
 		context: ApiContext = new ApiContext(),
 	): Promise<EntitySearchResult<T, Aggregations>> {
 		const response = await this.client.post<
 			EntitySearchResponse<T, Aggregations>
 		>(
 			`/search/${this.entityName.replaceAll("_", "-")}`,
-			criteria.toPayload(),
+			criteria instanceof Criteria ? criteria.toPayload() : criteria,
 			context.toHeaders(),
 		);
 
@@ -87,12 +87,12 @@ export class EntityRepository<Entity extends object = object> {
 	 * Search for entity IDs with the given criteria
 	 */
 	async searchIds(
-		criteria: Criteria<Entity>,
+		criteria: Criteria<Entity> | RequestParams,
 		context: ApiContext = new ApiContext(),
 	): Promise<string[]> {
 		const response = await this.client.post<{ data: string[] }>(
 			`/search-ids/${this.entityName.replaceAll("_", "-")}`,
-			criteria.toPayload(),
+			criteria instanceof Criteria ? criteria.toPayload() : criteria,
 			context.toHeaders(),
 		);
 
@@ -103,16 +103,23 @@ export class EntityRepository<Entity extends object = object> {
 	 * Aggregate entities with the given criteria
 	 */
 	async aggregate<Aggregations>(
-		criteria: Criteria<Entity>,
+		criteria: Criteria<Entity> | RequestParams,
 		context: ApiContext = new ApiContext(),
 	): Promise<EntitySearchResult<object, Aggregations>> {
-		criteria.setLimit(1);
+		let params: RequestParams = {};
+		if (criteria instanceof Criteria) {
+			criteria.setLimit(1);
+			params = criteria.toPayload();
+		} else {
+			params = criteria
+			params.limit = 1;
+		}
 
 		const response = await this.client.post<
 			EntitySearchResponse<object, Aggregations>
 		>(
 			`/search/${this.entityName.replaceAll("_", "-")}`,
-			criteria.toPayload(),
+			params,
 			context.toHeaders(),
 		);
 
