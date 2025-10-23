@@ -36,6 +36,12 @@ export class DenoKVRepository implements ShopRepositoryInterface<SimpleShop> {
 			shopSecret: string;
 			shopClientId: string | null;
 			shopClientSecret: string | null;
+			pendingShopUrl: string | null;
+			pendingShopSecret: string | null;
+			previousShopSecret: string | null;
+			secretsRotatedAt: number | null;
+			verifiedWithDoubleSignature: boolean | undefined;
+			registrationConfirmed: boolean | undefined;
 		};
 
 		if (data.shopActive === undefined) {
@@ -47,6 +53,30 @@ export class DenoKVRepository implements ShopRepositoryInterface<SimpleShop> {
 
 		if (data.shopClientId && data.shopClientSecret) {
 			shop.setShopCredentials(data.shopClientId, data.shopClientSecret);
+		}
+
+		if (data.pendingShopUrl) {
+			shop.setPendingShopUrl(data.pendingShopUrl);
+		}
+
+		if (data.pendingShopSecret) {
+			shop.setPendingShopSecret(data.pendingShopSecret);
+		}
+
+		if (data.previousShopSecret) {
+			shop.setPreviousShopSecret(data.previousShopSecret);
+		}
+
+		if (data.secretsRotatedAt) {
+			shop.setSecretsRotatedAt(new Date(Number(data.secretsRotatedAt)));
+		}
+
+		if (data.verifiedWithDoubleSignature) {
+			shop.setVerifiedWithDoubleSignature();
+		}
+
+		if (data.registrationConfirmed) {
+			shop.setRegistrationConfirmed();
 		}
 
 		return shop;

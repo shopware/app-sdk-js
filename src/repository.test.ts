@@ -11,6 +11,7 @@ describe("Repository", async () => {
 		expect(shop.getShopClientId()).toBeNull();
 		expect(shop.getShopClientSecret()).toBeNull();
 		expect(shop.getShopActive()).toBe(false);
+		expect(shop.isRegistrationConfirmed()).toBe(false);
 
 		shop.setShopActive(true);
 
@@ -20,6 +21,9 @@ describe("Repository", async () => {
 
 		expect(shop.getShopClientId()).toBe("test");
 		expect(shop.getShopClientSecret()).toBe("test");
+
+		shop.setRegistrationConfirmed();
+		expect(shop.isRegistrationConfirmed()).toBe(true);
 	});
 
 	test("InMemoryShopRepository", async () => {

@@ -1,15 +1,21 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test, beforeEach, afterEach } from "bun:test";
 import { Hono } from "hono";
 import { InMemoryShopRepository } from "../repository.js";
 import { AppServer } from "../app.js";
 import { configureAppServer } from "./hono.js";
 
 describe("Hono", async () => {
-	const repo = new InMemoryShopRepository();
+	let repo = new InMemoryShopRepository();
 
-	await repo.createShop("a", "a", "a");
+	beforeEach(async () => {
+		await repo.createShop("a", "a", "a");
+	});
 
-	test("configre by functions", async () => {
+	afterEach(async () => {
+		repo = new InMemoryShopRepository();
+	});
+
+	test("configure by functions", async () => {
 		const hono = new Hono();
 
 		configureAppServer(hono, {
@@ -315,6 +321,7 @@ describe("Hono", async () => {
 			appName: "My App",
 			appSecret: "my-secret",
 			shopRepository: repo,
+			enforceDoubleSignature: false,
 		});
 
 		const resp = await honoHttps.fetch(
@@ -332,7 +339,7 @@ describe("Hono", async () => {
 		expect(resp.status).toBe(200);
 
 		const body = (await resp.json()) as { proof: string; secret: string; confirmation_url: string };
-		
+
 		expect(body).toBeObject();
 		expect(body.proof).not.toBeNull();
 		expect(body.confirmation_url).toStartWith("https://");
@@ -347,13 +354,14 @@ describe("Hono", async () => {
 
 	test("configure with AppServer instance", async () => {
 		const hono = new Hono();
-		
+
 		// Create an AppServer instance directly
 		const appServer = new AppServer(
 			{
 				appName: "My App",
 				appSecret: "my-secret",
 				authorizeCallbackUrl: "http://localhost/app/register/confirm",
+				enforceDoubleSignature: false,
 			},
 			repo,
 		);

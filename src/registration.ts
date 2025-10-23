@@ -23,7 +23,9 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 
 		const shopId = url.searchParams.get("shop-id") as string;
 		const shopUrl = url.searchParams.get("shop-url") as string;
-		const timestamp = url.searchParams.get("timestamp") as string;
+		const sanitizedShopUrl = shopUrl
+			.replace(/([^:])(\/\/+)/g, "$1/")
+			.replace(/\/+$/, "");
 
 		const beforeRegistrationEvent = new BeforeRegistrationEvent(req, shopId, shopUrl);
 		this.app.hooks.publish('onBeforeRegistrationEvent', beforeRegistrationEvent);
@@ -32,22 +34,34 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 			return new InvalidRequestResponse(beforeRegistrationEvent.reason, 400);
 		}
 
-		const v = await this.app.signer.verify(
-			req.headers.get("shopware-app-signature") as string,
-			`shop-id=${shopId}&shop-url=${shopUrl}&timestamp=${timestamp}`,
-			this.app.cfg.appSecret,
-		);
+		const shop = await this.app.repository.getShopById(shopId);
 
-		if (!v) {
+		try {
+			await this.app.requestVerifier.authenticateRegistrationRequest(req, {
+					appSecret: this.app.cfg.appSecret,
+					enforceDoubleSignature: this.app.cfg.enforceDoubleSignature ?? false,
+				},
+				shop,
+			);
+		} catch {
 			return new InvalidRequestResponse("Cannot validate app signature");
 		}
 
 		const shopSecret = randomString();
-		const sanitizedShopUrl = shopUrl
-			.replace(/([^:])(\/\/+)/g, "$1/")
-			.replace(/\/+$/, "");
 
-		await this.app.repository.createShop(shopId, sanitizedShopUrl, shopSecret);
+		if (shop === null) {
+			await this.app.repository.createShop(shopId, sanitizedShopUrl, shopSecret);
+			const shop = (await this.app.repository.getShopById(shopId))!;
+			shop.setPendingShopSecret(shopSecret);
+			shop.setPendingShopUrl(sanitizedShopUrl);
+			this.setVerifiedWithDoubleSignature(shop, req);
+			await this.app.repository.updateShop(shop);
+		} else {
+			shop.setPendingShopSecret(shopSecret);
+			shop.setPendingShopUrl(sanitizedShopUrl);
+			this.setVerifiedWithDoubleSignature(shop, req);
+			await this.app.repository.updateShop(shop);
+		}
 
 		return new Response(
 			JSON.stringify({
@@ -90,18 +104,36 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 			return new InvalidRequestResponse("Invalid shop given");
 		}
 
-		const v = await this.app.signer.verify(
-			req.headers.get("shopware-shop-signature") as string,
-			bodyContent,
-			shop.getShopSecret(),
-		);
-
-		if (!v) {
-			// Shop has failed the verification. Delete it from our DB.
-			await this.app.repository.deleteShop(shop.getShopId());
-
+		try {
+			await this.app.requestVerifier.authenticateRegistrationConfirmation(
+				req,
+				bodyContent,
+				shop,
+				{
+					appSecret: this.app.cfg.appSecret,
+					enforceDoubleSignature: this.app.cfg.enforceDoubleSignature ?? false,
+				},
+			);
+		} catch {
 			return new InvalidRequestResponse("Cannot validate app signature");
 		}
+
+		const pendingSecret = shop.getPendingShopSecret();
+		const pendingUrl = shop.getPendingShopUrl();
+		if (pendingSecret === null || pendingUrl === null) {
+			return new InvalidRequestResponse("Invalid Request", 400);
+		}
+
+		const previousSecret = shop.getShopSecret();
+		if (pendingSecret !== previousSecret) {
+			shop.setPreviousShopSecret(previousSecret);
+			shop.setShopSecret(pendingSecret);
+			shop.setSecretsRotatedAt(new Date());
+		}
+
+		shop.setPendingShopSecret(null);
+		shop.setShopUrl(pendingUrl);
+		shop.setPendingShopUrl(null);
 
 		shop.setShopCredentials(body.apiKey, body.secretKey);
 
@@ -113,6 +145,8 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 
 			return new InvalidRequestResponse(event.reason, 403);
 		}
+
+		shop.setRegistrationConfirmed();
 
 		await this.app.repository.updateShop(shop);
 
@@ -227,6 +261,16 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 		}
 
 		return new Response(null, { status: 204 });
+	}
+
+	/**
+	 * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
+	 */
+	private setVerifiedWithDoubleSignature(shop: Shop, req: Request): void
+	{
+		if (this.app.cfg.enforceDoubleSignature || req.headers.has('shopware-shop-signature')) {
+			shop.setVerifiedWithDoubleSignature();
+		}
 	}
 }
 

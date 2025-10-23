@@ -27,6 +27,12 @@ export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
 				secret: secret,
 				clientId: null,
 				clientSecret: null,
+				pendingShopUrl: null,
+				pendingShopSecret: null,
+				previousShopSecret: null,
+				secretsRotatedAt: null,
+				verifiedWithDoubleSignature: null,
+				registrationConfirmed: false,
 			},
 		});
 
@@ -66,6 +72,30 @@ export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
 			);
 		}
 
+		if (response.Item.pendingShopUrl) {
+			shop.setPendingShopUrl(response.Item.pendingShopUrl);
+		}
+
+		if (response.Item.pendingShopSecret) {
+			shop.setPendingShopSecret(response.Item.pendingShopSecret);
+		}
+
+		if (response.Item.previousShopSecret) {
+			shop.setPreviousShopSecret(response.Item.previousShopSecret);
+		}
+
+		if (response.Item.secretsRotatedAt) {
+			shop.setSecretsRotatedAt(new Date(Number(response.Item.secretsRotatedAt)));
+		}
+
+		if (response.Item.verifiedWithDoubleSignature) {
+			shop.setVerifiedWithDoubleSignature();
+		}
+
+		if (response.Item.registrationConfirmed) {
+			shop.setRegistrationConfirmed();
+		}
+
 		return shop;
 	}
 
@@ -74,7 +104,7 @@ export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
 			TableName: this.tableName,
 			Key: { id: shop.getShopId() },
 			UpdateExpression:
-				"SET active = :active, #u = :url, secret = :secret, clientId = :clientId, clientSecret = :clientSecret",
+				"SET active = :active, #u = :url, secret = :secret, clientId = :clientId, clientSecret = :clientSecret, pendingShopUrl = :pendingShopUrl, pendingShopSecret = :pendingShopSecret, previousShopSecret = :previousShopSecret, secretsRotatedAt = :secretsRotatedAt, verifiedWithDoubleSignature = :verifiedWithDoubleSignature, registrationConfirmed = :registrationConfirmed",
 			ExpressionAttributeNames: {
 				"#u": "url",
 			},
@@ -84,6 +114,12 @@ export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
 				":secret": shop.getShopSecret(),
 				":clientId": shop.getShopClientId(),
 				":clientSecret": shop.getShopClientSecret(),
+				":pendingShopUrl": shop.getPendingShopUrl(),
+				":pendingShopSecret": shop.getPendingShopSecret(),
+				":previousShopSecret": shop.getPreviousShopSecret(),
+				":secretsRotatedAt": shop.getSecretsRotatedAt()?.getTime() ?? null,
+				":verifiedWithDoubleSignature": shop.hasVerifiedWithDoubleSignature(),
+				":registrationConfirmed": shop.isRegistrationConfirmed(),
 			},
 		});
 

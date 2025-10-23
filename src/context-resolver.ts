@@ -33,21 +33,7 @@ export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
 			throw new Error(`Cannot find shop by id ${webHookBody.source.shopId}`);
 		}
 
-		const signature = req.headers.get("shopware-shop-signature");
-
-		if (signature === null) {
-			throw new Error("Missing shopware-shop-signature header");
-		}
-
-		if (
-			!(await this.app.signer.verify(
-				signature,
-				webHookContent,
-				shop.getShopSecret(),
-			))
-		) {
-			throw new Error("Invalid signature");
-		}
+		await this.app.requestVerifier.authenticatePostRequest(req, webHookContent, shop);
 
 		return new Context<Shop, Payload>(
 			shop as Shop,
@@ -77,7 +63,7 @@ export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
 			throw new Error(`Cannot find shop by id ${shopId}`);
 		}
 
-		await this.app.signer.verifyGetRequest(req, shop.getShopSecret());
+		await this.app.requestVerifier.authenticateGetRequest(req, shop);
 
 		const paramsObject: Record<string, string> = {};
 
