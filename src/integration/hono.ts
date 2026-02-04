@@ -38,6 +38,13 @@ interface MiddlewareConfigBase {
 	registerConfirmationUrl?: string | null;
 
 	/**
+	 * When true, registration requires both app and shop signatures during re-registration and confirmation.
+	 *
+	 * @default true
+	 */
+	enforceDoubleSignature?: boolean;
+
+	/**
 	 * The relative url of the app installation lifecycle endpoint
 	 *
 	 * @default "/app/install"
@@ -192,6 +199,7 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 						appName: cfg.appName,
 						appSecret: cfg.appSecret,
 						authorizeCallbackUrl: appUrl + cfg.registerConfirmationUrl,
+						enforceDoubleSignature: cfg.enforceDoubleSignature ?? false,
 					},
 					cfg.shopRepository,
 					cfg.httpClientTokenCache,

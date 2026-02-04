@@ -10,7 +10,7 @@ describe("src/registration.ts", async () => {
 
 	beforeEach(() => {
 		app = new AppServer(
-			{ appName: "test", appSecret: "test", authorizeCallbackUrl: "test" },
+			{ appName: "test", appSecret: "test", authorizeCallbackUrl: "test", enforceDoubleSignature: false },
 			new InMemoryShopRepository(),
 		);
 
@@ -48,6 +48,165 @@ describe("src/registration.ts", async () => {
 		);
 
 		expect(resp.status).toBe(200);
+	});
+
+	test("authorize: missing app signature", async () => {
+		const resp = await app.registration.authorize(
+			new Request(
+				"http://localhost?shop-url=https://my-shop.com&shop-id=test&timestamp=123",
+			),
+		);
+
+		expect(resp.status).toBe(400);
+	});
+
+	test("authorize: confirmed shop requires shop signature when enforced", async () => {
+		const enforcedApp = new AppServer(
+			{ appName: "test", appSecret: "test", authorizeCallbackUrl: "test", enforceDoubleSignature: true },
+			new InMemoryShopRepository(),
+		);
+
+		await enforcedApp.repository.createShop("shop-1", "https://my-shop.com", "shop-secret");
+		const shop = await enforcedApp.repository.getShopById("shop-1");
+		shop?.setRegistrationConfirmed();
+		if (shop) {
+			await enforcedApp.repository.updateShop(shop);
+		}
+
+		const query = "shop-id=shop-1&shop-url=https://my-shop.com&timestamp=1234567890";
+		const signature = await enforcedApp.signer.sign(query, enforcedApp.cfg.appSecret);
+		const req = new Request(`http://localhost?${query}`, {
+			headers: new Headers({ "shopware-app-signature": signature }),
+		});
+		const resp = await enforcedApp.registration.authorize(req);
+
+		expect(resp.status).toBe(401);
+	});
+
+	test("authorize: creates pending secret and url for new shop", async () => {
+		const query = "shop-id=123&shop-url=https://my-shop.com/path&timestamp=1234567890";
+		const signature = await app.signer.sign(query, app.cfg.appSecret);
+		const resp = await app.registration.authorize(
+			new Request(`http://localhost?${query}`, {
+				headers: new Headers({ "shopware-app-signature": signature }),
+			}),
+		);
+
+		expect(resp.status).toBe(200);
+
+		const payload = await resp.json();
+		const shop = await app.repository.getShopById("123");
+
+		expect(shop?.getShopSecret()).toBe(payload.secret);
+		expect(shop?.getPendingShopSecret()).toBe(payload.secret);
+		expect(shop?.getPendingShopUrl()).toBe("https://my-shop.com/path");
+		expect(shop?.getShopUrl()).toBe("https://my-shop.com/path");
+		expect(shop?.isRegistrationConfirmed()).toBeFalse();
+	});
+
+	test("authorize: updates pending secret and url for existing shop", async () => {
+		await app.repository.createShop("123", "https://old-url.com/path", "old-secret");
+		const existingShop = await app.repository.getShopById("123");
+		if (existingShop) {
+			await app.repository.updateShop(existingShop);
+		}
+
+		const query = "shop-id=123&shop-url=https://new-url.com/path&timestamp=1234567890";
+		const signature = await app.signer.sign(query, app.cfg.appSecret);
+		const resp = await app.registration.authorize(
+			new Request(`http://localhost?${query}`, {
+				headers: new Headers({ "shopware-app-signature": signature }),
+			}),
+		);
+
+		expect(resp.status).toBe(200);
+
+		const payload = await resp.json();
+		const shop = await app.repository.getShopById("123");
+
+		expect(shop?.getPendingShopSecret()).toBe(payload.secret);
+		expect(shop?.getPendingShopUrl()).toBe("https://new-url.com/path");
+		expect(shop?.getShopUrl()).toBe("https://old-url.com/path");
+	});
+
+	test("authorize: proof uses new shop url", async () => {
+		await app.repository.createShop("123", "https://my-shop.com", "secret");
+
+		const query = "shop-id=123&shop-url=https://my-new-shop.com&timestamp=1234567890";
+		const signature = await app.signer.sign(query, app.cfg.appSecret);
+		const resp = await app.registration.authorize(
+			new Request(`http://localhost?${query}`, {
+				headers: new Headers({ "shopware-app-signature": signature }),
+			}),
+		);
+
+		expect(resp.status).toBe(200);
+
+		const payload = await resp.json();
+		const expectedProof = await app.signer.sign(
+			`123https://my-new-shop.com${app.cfg.appName}`,
+			app.cfg.appSecret,
+		);
+
+		expect(payload.proof).toBe(expectedProof);
+	});
+
+	test("authorize: records double signature verification when enforced", async () => {
+		const enforcedApp = new AppServer(
+			{ appName: "test", appSecret: "test", authorizeCallbackUrl: "test", enforceDoubleSignature: true },
+			new InMemoryShopRepository(),
+		);
+
+		const query = "shop-id=123&shop-url=https://my-shop.com&timestamp=1234567890";
+		const signature = await enforcedApp.signer.sign(query, enforcedApp.cfg.appSecret);
+		const resp = await enforcedApp.registration.authorize(
+			new Request(`http://localhost?${query}`, {
+				headers: new Headers({ "shopware-app-signature": signature }),
+			}),
+		);
+
+		expect(resp.status).toBe(200);
+
+		const shop = await enforcedApp.repository.getShopById("123");
+		expect(shop?.hasVerifiedWithDoubleSignature()).toBeTrue();
+	});
+
+	test("authorize: records double signature verification when header present", async () => {
+		const query = "shop-id=123&shop-url=https://my-shop.com&timestamp=1234567890";
+		const signature = await app.signer.sign(query, app.cfg.appSecret);
+		const resp = await app.registration.authorize(
+			new Request(`http://localhost?${query}`, {
+				headers: new Headers({
+					"shopware-app-signature": signature,
+					"shopware-shop-signature": "shopware-shop-signature",
+				}),
+			}),
+		);
+
+		expect(resp.status).toBe(200);
+
+		const shop = await app.repository.getShopById("123");
+		expect(shop?.hasVerifiedWithDoubleSignature()).toBeTrue();
+	});
+
+	test("authorize: requires shop signature when shop used double verification", async () => {
+		await app.repository.createShop("123", "https://my-shop.com", "shop-secret");
+		const shop = await app.repository.getShopById("123");
+		shop?.setRegistrationConfirmed();
+		shop?.setVerifiedWithDoubleSignature();
+		if (shop) {
+			await app.repository.updateShop(shop);
+		}
+
+		const query = "shop-id=123&shop-url=https://my-shop.com&timestamp=1234567890";
+		const signature = await app.signer.sign(query, app.cfg.appSecret);
+		const resp = await app.registration.authorize(
+			new Request(`http://localhost?${query}`, {
+				headers: new Headers({ "shopware-app-signature": signature }),
+			}),
+		);
+
+		expect(resp.status).toBe(401);
 	});
 
 	const sanitizeShopUrlTestCases = [
@@ -149,9 +308,10 @@ describe("src/registration.ts", async () => {
 	});
 
 	test("authorizeCallback: shop does not exist", async () => {
+		const body = '{"shopId": "1", "apiKey": "test", "secretKey": "test"}';
 		const resp = await app.registration.authorizeCallback(
 			new Request("http://localhost", {
-				body: '{"shopId": "1", "apiKey": "test", "secretKey": "test"}',
+				body,
 				headers: {
 					"shopware-shop-signature":
 						"ecd078f3be7571ed7fe503ebd428dd79c653d108920986a0d936de4b1d371ced",
@@ -165,17 +325,24 @@ describe("src/registration.ts", async () => {
 
 	test("authorizeCallback: rejeced", async () => {
 		await app.repository.createShop("1", "http://localhost", "test");
+		const shop = await app.repository.getShopById("1");
+		shop?.setPendingShopSecret("test");
+		shop?.setPendingShopUrl("http://localhost");
+		if (shop) {
+			await app.repository.updateShop(shop);
+		}
 
 		app.hooks.on("onAuthorize", async (event: ShopAuthorizeEvent) => {
 			event.rejectRegistration("not you!");
 		});
 
+		const body = '{"shopId": "1", "apiKey": "test", "secretKey": "test"}';
+		const signature = await app.signer.sign(body, "test");
 		const resp = await app.registration.authorizeCallback(
 			new Request("http://localhost", {
-				body: '{"shopId": "1", "apiKey": "test", "secretKey": "test"}',
+				body,
 				headers: {
-					"shopware-shop-signature":
-						"ecd078f3be7571ed7fe503ebd428dd79c653d108920986a0d936de4b1d371ced",
+					"shopware-shop-signature": signature,
 				},
 			}),
 		);
@@ -186,18 +353,87 @@ describe("src/registration.ts", async () => {
 
 	test("authorizeCallback: success", async () => {
 		await app.repository.createShop("1", "http://localhost", "test");
+		const shop = await app.repository.getShopById("1");
+		shop?.setPendingShopSecret("test");
+		shop?.setPendingShopUrl("http://localhost");
+		if (shop) {
+			await app.repository.updateShop(shop);
+		}
 
+		const body = '{"shopId": "1", "apiKey": "test", "secretKey": "test"}';
+		const signature = await app.signer.sign(body, "test");
 		const resp = await app.registration.authorizeCallback(
 			new Request("http://localhost", {
-				body: '{"shopId": "1", "apiKey": "test", "secretKey": "test"}',
+				body,
 				headers: {
-					"shopware-shop-signature":
-						"ecd078f3be7571ed7fe503ebd428dd79c653d108920986a0d936de4b1d371ced",
+					"shopware-shop-signature": signature,
 				},
 			}),
 		);
 
 		expect(resp.status).toBe(204);
+
+		const updatedShop = await app.repository.getShopById("1");
+		expect(updatedShop?.isRegistrationConfirmed()).toBeTrue();
+		expect(updatedShop?.getPendingShopSecret()).toBeNull();
+		expect(updatedShop?.getPendingShopUrl()).toBeNull();
+		expect(updatedShop?.getPreviousShopSecret()).toBeNull();
+		expect(updatedShop?.getSecretsRotatedAt()).toBeNull();
+	});
+
+	test("authorizeCallback: fails without pending secret", async () => {
+		await app.repository.createShop("1", "http://localhost", "test");
+
+		const body = '{"shopId": "1", "apiKey": "test", "secretKey": "test"}';
+		const signature = await app.signer.sign(body, "test");
+		const resp = await app.registration.authorizeCallback(
+			new Request("http://localhost", {
+				body,
+				headers: {
+					"shopware-shop-signature": signature,
+				},
+			}),
+		);
+
+		expect(resp.status).toBe(401);
+	});
+
+	test("authorizeCallback: rotates secrets and url for confirmed shop", async () => {
+		const enforcedApp = new AppServer(
+			{ appName: "test", appSecret: "test", authorizeCallbackUrl: "test", enforceDoubleSignature: true },
+			new InMemoryShopRepository(),
+		);
+
+		await enforcedApp.repository.createShop("1", "https://old-url.com", "old-secret");
+		const shop = await enforcedApp.repository.getShopById("1");
+		shop?.setRegistrationConfirmed();
+		shop?.setPendingShopSecret("new-secret");
+		shop?.setPendingShopUrl("https://new-url.com/path");
+		if (shop) {
+			await enforcedApp.repository.updateShop(shop);
+		}
+
+		const body = '{"shopId": "1", "apiKey": "test", "secretKey": "test"}';
+		const newSignature = await enforcedApp.signer.sign(body, "new-secret");
+		const oldSignature = await enforcedApp.signer.sign(body, "old-secret");
+		const resp = await enforcedApp.registration.authorizeCallback(
+			new Request("http://localhost", {
+				body,
+				headers: {
+					"shopware-shop-signature": newSignature,
+					"shopware-shop-signature-previous": oldSignature,
+				},
+			}),
+		);
+
+		expect(resp.status).toBe(204);
+
+		const updatedShop = await enforcedApp.repository.getShopById("1");
+		expect(updatedShop?.getShopSecret()).toBe("new-secret");
+		expect(updatedShop?.getPreviousShopSecret()).toBe("old-secret");
+		expect(updatedShop?.getPendingShopSecret()).toBeNull();
+		expect(updatedShop?.getSecretsRotatedAt()).not.toBeNull();
+		expect(updatedShop?.getShopUrl()).toBe("https://new-url.com/path");
 	});
 
 	test("app activate", async () => {
@@ -274,5 +510,116 @@ describe("src/registration.ts", async () => {
 		expect(resp.status).toBe(204);
 
 		expect(app.repository.getShopById("1")).resolves.toBeNull();
+	});
+
+	test("new shop is recorded as having used double signature verification when enforced", async () => {
+		app.cfg.enforceDoubleSignature = true;
+		app.signer.verify = jest.fn().mockResolvedValue(true);
+
+		const resp = await app.registration.authorize(
+			new Request(
+				"http://localhost?shop-url=test&shop-id=test&timestamp=test",
+				{ headers: new Headers({ "shopware-app-signature": "test" }) },
+			),
+		);
+
+		expect(resp.status).toBe(200);
+
+		const shop = await app.repository.getShopById("test");
+
+		expect(shop?.hasVerifiedWithDoubleSignature()).toBeTrue();
+	});
+
+	test("existing shop is recorded as having used double signature verification when enforced", async () => {
+		app.signer.verify = jest.fn().mockResolvedValue(true);
+
+		await app.repository.createShop("test", "http://localhost", "test");
+		app.cfg.enforceDoubleSignature = true;
+
+		let shop = await app.repository.getShopById("test");
+
+		expect(shop).not.toBeNull();
+		expect(shop?.hasVerifiedWithDoubleSignature()).toBeFalse();
+
+		const resp = await app.registration.authorize(
+			new Request(
+				"http://localhost?shop-url=test&shop-id=test&timestamp=test",
+				{ headers: new Headers({ "shopware-app-signature": "test", "shopware-shop-signature": "test" }) },
+			),
+		);
+
+		expect(resp.status).toBe(200);
+
+		shop = await app.repository.getShopById("test");
+
+		expect(shop?.hasVerifiedWithDoubleSignature()).toBeTrue();
+	});
+
+	test("new shop is not recorded as having used double signature verification when not enforced", async () => {
+		app.signer.verify = jest.fn().mockResolvedValue(true);
+		app.cfg.enforceDoubleSignature = false;
+
+		const resp = await app.registration.authorize(
+			new Request(
+				"http://localhost?shop-url=test&shop-id=test&timestamp=test",
+				{ headers: new Headers({ "shopware-app-signature": "test" }) },
+			),
+		);
+
+		expect(resp.status).toBe(200);
+
+		const shop = await app.repository.getShopById("test");
+
+		expect(shop?.hasVerifiedWithDoubleSignature()).toBeFalse();
+	});
+
+	test("existing shop is not recorded as having used double signature verification when not enforced", async () => {
+		app.signer.verify = jest.fn().mockResolvedValue(true);
+
+		await app.repository.createShop("test", "http://localhost", "test");
+		app.cfg.enforceDoubleSignature = false;
+
+		let shop = await app.repository.getShopById("test");
+
+		expect(shop).not.toBeNull();
+		expect(shop?.hasVerifiedWithDoubleSignature()).toBeFalse();
+
+		const resp = await app.registration.authorize(
+			new Request(
+				"http://localhost?shop-url=test&shop-id=test&timestamp=test",
+				{ headers: new Headers({ "shopware-app-signature": "test" }) },
+			),
+		);
+
+		expect(resp.status).toBe(200);
+
+		shop = await app.repository.getShopById("test");
+
+		expect(shop?.hasVerifiedWithDoubleSignature()).toBeFalse();
+	});
+
+	test("existing shop is recorded as having used double signature verification when headers present", async () => {
+		app.signer.verify = jest.fn().mockResolvedValue(true);
+
+		await app.repository.createShop("test", "http://localhost", "test");
+		app.cfg.enforceDoubleSignature = false;
+
+		let shop = await app.repository.getShopById("test");
+
+		expect(shop).not.toBeNull();
+		expect(shop?.hasVerifiedWithDoubleSignature()).toBeFalse();
+
+		const resp = await app.registration.authorize(
+			new Request(
+				"http://localhost?shop-url=test&shop-id=test&timestamp=test",
+				{ headers: new Headers({ "shopware-app-signature": "test", "shopware-shop-signature": "test" }) },
+			),
+		);
+
+		expect(resp.status).toBe(200);
+
+		shop = await app.repository.getShopById("test");
+
+		expect(shop?.hasVerifiedWithDoubleSignature()).toBeTrue();
 	});
 });
