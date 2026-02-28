@@ -351,6 +351,12 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 					"shop",
 					ctx.get("shop").getShopId(),
 					ctx.get("app").cfg.appSecret,
+					{
+						path: "/",
+						secure: true,
+						sameSite: "None",
+						partitioned: true,
+					},
 				);
 
 				return ctx.redirect(redirect);
