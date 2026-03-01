@@ -299,6 +299,12 @@ describe("Hono", async () => {
 			"http://localhost/client?shop-id=a&shopware-shop-signature=8b523d99aeef5b456288fcec48236c3367a914c6b2c9fded63d81257ac019b25",
 		);
 
+		const relativeCookie = relative.headers.get("set-cookie") as string;
+		expect(relativeCookie).toContain("SameSite=None");
+		expect(relativeCookie).toContain("Secure");
+		expect(relativeCookie).toContain("Partitioned");
+		expect(relativeCookie).toContain("Path=/");
+
 		const absolute = await hono.fetch(
 			new Request(
 				"http://localhost/app/absolute?shop-id=a&shopware-shop-signature=8b523d99aeef5b456288fcec48236c3367a914c6b2c9fded63d81257ac019b25",
@@ -309,6 +315,12 @@ describe("Hono", async () => {
 		expect(absolute.headers.get("Location")).toBe(
 			"https://example.com/?shop-id=a&shopware-shop-signature=8b523d99aeef5b456288fcec48236c3367a914c6b2c9fded63d81257ac019b25",
 		);
+
+		const absoluteCookie = absolute.headers.get("set-cookie") as string;
+		expect(absoluteCookie).toContain("SameSite=None");
+		expect(absoluteCookie).toContain("Secure");
+		expect(absoluteCookie).toContain("Partitioned");
+		expect(absoluteCookie).toContain("Path=/");
 	});
 
 	test("buildBaseUrl with HTTPS force", async () => {
