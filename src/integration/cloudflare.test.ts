@@ -220,12 +220,15 @@ describe("Cloudflare", async () => {
 		shop.setRegistrationConfirmed();
 
 		await repo.updateShop(shop);
-		const updatedShop = await repo.getShopById("test");
+		let updatedShop = await repo.getShopById("test");
 
 		expect(updatedShop).not.toBeNull();
+		updatedShop = updatedShop!;
 
-		expect(shop.hasVerifiedWithDoubleSignature()).toBeTrue();
-		expect(shop.isRegistrationConfirmed()).toBeTrue();
+		// Assert on the shop re-read from KV, not the in-memory `shop` — the round-trip is
+		// what was broken (serialized as camelCase, read back as snake-case/int).
+		expect(updatedShop.hasVerifiedWithDoubleSignature()).toBeTrue();
+		expect(updatedShop.isRegistrationConfirmed()).toBeTrue();
 	});
 
 	describe("CloudflareHttpClientTokenCache", async () => {

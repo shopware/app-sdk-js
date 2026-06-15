@@ -57,6 +57,14 @@ export class CloudflareShopRepository
 			secretsRotatedAt: shop.getSecretsRotatedAt()
 				? shop.getSecretsRotatedAt()!.getTime()
 				: null,
+			// deserializeShop reads these as `verified_with_double_signatures === 1` and
+			// `registrationConfirmed === 1`. The spread above only emits the SimpleShop
+			// camelCase booleans (`verifiedWithDoubleSignature`, `registrationConfirmed: true`),
+			// which the reader never matches — so without these keys neither flag survives a
+			// round-trip. Losing the double-signature flag silently disables re-registration
+			// enforcement, letting a shop be re-registered without the second signature.
+			verified_with_double_signatures: shop.hasVerifiedWithDoubleSignature() ? 1 : 0,
+			registrationConfirmed: shop.isRegistrationConfirmed() ? 1 : 0,
 		});
 	}
 
