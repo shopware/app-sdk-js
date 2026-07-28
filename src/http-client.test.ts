@@ -1,5 +1,9 @@
 import { describe, expect, mock, spyOn, test } from "bun:test";
-import { HttpClient, InMemoryHttpClientTokenCache } from "../src/http-client.js";
+import {
+	ApiClientAuthenticationFailed,
+	HttpClient,
+	InMemoryHttpClientTokenCache,
+} from "../src/http-client.js";
 import { SimpleShop } from "../src/repository.js";
 
 function createMockFetch(responseBody: string, options?: ResponseInit) {
@@ -190,6 +194,74 @@ describe("HTTP Client", async () => {
 		mockFetch.mockRestore();
 	});
 
+	test("get: non-Shopware error response does not crash while formatting the error", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
+			createMockFetchImpl('{"access_token": "test", "expires_in": 5000}'),
+		);
+
+		const shop = new SimpleShop("TeStShOpId1", "https://shop.example", "shop-secret");
+		shop.setShopCredentials("client-id", "client-secret");
+		const client = new HttpClient(shop);
+
+		// A gateway/WAF in front of the shop can return a non-OK response that isn't shaped like a Shopware error.
+		mockFetch.mockImplementation(
+			createMockFetchImpl('{"code": "gateway_error", "msg": "upstream timeout"}', {
+				status: 502,
+			}),
+		);
+
+		expect(client.get("/test")).rejects.toThrowError(
+			"Request failed with error: unexpected response with HTTP status 502 for shop with id: TeStShOpId1",
+		);
+
+		mockFetch.mockRestore();
+	});
+
+	test("get: non-JSON error response does not crash while formatting the error", async () => {
+		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
+			createMockFetchImpl('{"access_token": "test", "expires_in": 5000}'),
+		);
+
+		const shop = new SimpleShop("TeStShOpId1", "https://shop.example", "shop-secret");
+		shop.setShopCredentials("client-id", "client-secret");
+		const client = new HttpClient(shop);
+
+		// A proxy/gateway can also return a non-JSON body (e.g. an HTML error page).
+		mockFetch.mockImplementation(
+			createMockFetchImpl("<html>Gateway Timeout</html>", { status: 504 }),
+		);
+
+		expect(client.get("/test")).rejects.toThrowError(
+			"Request failed with error: unexpected response with HTTP status 504 for shop with id: TeStShOpId1",
+		);
+
+		mockFetch.mockRestore();
+	});
+
+	test("getToken: throws when the shop's OAuth response has an unexpected shape", async () => {
+		// A misconfigured shop URL (wrong host, storefront-only endpoint, reverse-proxy/WAF rule) can route
+		// the OAuth request to something that answers 200 OK with a body that isn't a Shopware token response.
+		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
+			createMockFetchImpl('{"code": -5, "msg": "API method does not exist"}'),
+		);
+
+		const shop = new SimpleShop("TeStShOpId1", "https://shop.example", "shop-secret");
+		shop.setShopCredentials("client-id", "client-secret");
+		const client = new HttpClient(shop);
+
+		try {
+			await client.getToken();
+			throw new Error("Expected getToken to fail");
+		} catch (error) {
+			expect(error).toBeInstanceOf(ApiClientAuthenticationFailed);
+			expect((error as Error).message).toContain(
+				"The api client authentication to shop with id: TeStShOpId1",
+			);
+		}
+
+		mockFetch.mockRestore();
+	});
+
 	test("test authentification gets redirect", async () => {
 		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
 			createMockFetchImpl("", { status: 301 })
@@ -226,7 +298,9 @@ describe("HTTP Client", async () => {
 	});
 
 	test("timeout: successful request with timeout option", async () => {
-		const mockFetch = createMockFetch('{"access_token": "test", "expires_in": 5000}');
+		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
+			createMockFetchImpl('{"access_token": "test", "expires_in": 5000}'),
+		);
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"));
 
@@ -270,7 +344,9 @@ describe("HTTP Client", async () => {
 	});
 
 	test("defaultTimeout: uses default timeout when no timeout option provided", async () => {
-		const mockFetch = createMockFetch('{"access_token": "test", "expires_in": 5000}');
+		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
+			createMockFetchImpl('{"access_token": "test", "expires_in": 5000}'),
+		);
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"), new InMemoryHttpClientTokenCache(), 3000);
 
@@ -287,7 +363,9 @@ describe("HTTP Client", async () => {
 	});
 
 	test("defaultTimeout: explicit timeout overrides default timeout", async () => {
-		const mockFetch = createMockFetch('{"access_token": "test", "expires_in": 5000}');
+		const mockFetch = spyOn(global, "fetch").mockImplementationOnce(
+			createMockFetchImpl('{"access_token": "test", "expires_in": 5000}'),
+		);
 
 		const client = new HttpClient(new SimpleShop("blaa", "test", "test"), new InMemoryHttpClientTokenCache(), 3000);
 

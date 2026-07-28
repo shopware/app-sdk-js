@@ -152,7 +152,7 @@ export class HttpClient {
 		if (!f.ok) {
 			throw new ApiClientRequestFailed(
 				this.shop.getShopId(),
-				new HttpClientResponse(f.status, await f.json(), f.headers),
+				new HttpClientResponse(f.status, await safeParseJson<ShopwareErrorResponse>(f), f.headers),
 			);
 		}
 
@@ -226,10 +226,17 @@ export class HttpClient {
 				);
 			}
 
-			const authBody = (await auth.json()) as {
+			const authBody = await safeParseJson<{
 				access_token: string;
 				expires_in: number;
-			};
+			}>(auth);
+
+			if (typeof authBody.access_token !== "string" || typeof authBody.expires_in !== "number") {
+				throw new ApiClientAuthenticationFailed(
+					this.shop.getShopId(),
+					new HttpClientResponse(auth.status, JSON.stringify(authBody), auth.headers),
+				);
+			}
 
 			const expireDate = new Date();
 			expireDate.setSeconds(expireDate.getSeconds() + authBody.expires_in);
@@ -294,11 +301,26 @@ export class ApiClientAuthenticationFailed extends Error {
 export class ApiClientRequestFailed extends Error {
 	constructor(
 		shopId: string,
-		public response: HttpClientResponse<ShopwareErrorResponse>,
+		public response: HttpClientResponse<Partial<ShopwareErrorResponse>>,
 	) {
-		const message = response.body.errors.map((e) => e.detail).join(", ");
+		const errors = Array.isArray(response.body?.errors) ? response.body.errors : [];
+		const message = errors.length > 0
+			? errors.map((e) => e.detail).join(", ")
+			: `unexpected response with HTTP status ${response.statusCode}`;
 
 		super(`Request failed with error: ${message} for shop with id: ${shopId}`);
+	}
+}
+
+/**
+ * Parses a response body as JSON, falling back to an empty object when the
+ * body is missing or isn't valid JSON.
+ */
+async function safeParseJson<T extends object>(response: Response): Promise<Partial<T>> {
+	try {
+		return await response.json();
+	} catch {
+		return {};
 	}
 }
 
