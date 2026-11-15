@@ -1,10 +1,8 @@
-import { type ShopRepositoryInterface, SimpleShop } from "../repository.js";
-
 import Database from "better-sqlite3";
 
-export class BetterSqlite3Repository
-	implements ShopRepositoryInterface<SimpleShop>
-{
+import { type ShopRepositoryInterface, SimpleShop } from "../repository.js";
+
+export class BetterSqlite3Repository implements ShopRepositoryInterface<SimpleShop> {
 	db: Database.Database;
 	constructor(fileName: string) {
 		this.db = new Database(fileName);

@@ -1,4 +1,5 @@
 import { describe, expect, jest, test } from "bun:test";
+
 import { AppServer } from "../src/app.js";
 import { ContextResolver } from "../src/context-resolver.js";
 import { InMemoryHttpClientTokenCache } from "../src/http-client.js";
@@ -16,10 +17,13 @@ describe("Context Resolver", async () => {
 
 	await app.repository.createShop("blaa", "test", "test");
 
-	const contextResolver = new ContextResolver(app, new InMemoryHttpClientTokenCache());
+	const contextResolver = new ContextResolver(
+		app,
+		new InMemoryHttpClientTokenCache(),
+	);
 
 	test("fromBrowser: shop does not exist", async () => {
-		expect(
+		await expect(
 			contextResolver.fromBrowser(
 				new Request(
 					"https://example.com/?shop-id=test&shopware-shop-signature=aaa",
@@ -29,7 +33,7 @@ describe("Context Resolver", async () => {
 	});
 
 	test("fromBrowser: missing header", async () => {
-		expect(
+		await expect(
 			contextResolver.fromBrowser(
 				new Request("https://example.com/?shop-id=blaa"),
 			),
@@ -52,7 +56,7 @@ describe("Context Resolver", async () => {
 	});
 
 	test("fromSource: missing signature header", async () => {
-		expect(
+		await expect(
 			contextResolver.fromAPI(
 				new Request("https://example.com/", {
 					body: JSON.stringify({
@@ -66,7 +70,7 @@ describe("Context Resolver", async () => {
 	});
 
 	test("fromSource: shop does not exists", async () => {
-		expect(
+		await expect(
 			contextResolver.fromAPI(
 				new Request("https://example.com/", {
 					headers: {
@@ -83,7 +87,7 @@ describe("Context Resolver", async () => {
 	});
 
 	test("fromSource: invalid signature", async () => {
-		expect(
+		await expect(
 			contextResolver.fromAPI(
 				new Request("https://example.com/", {
 					headers: {

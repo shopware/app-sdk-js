@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, jest, test } from "bun:test";
+
 import { Hooks } from "./hooks.js";
 import { ShopAuthorizeEvent } from "./registration.js";
 import { SimpleShop } from "./repository.js";
@@ -51,7 +52,9 @@ describe("Hooks", () => {
 			new Request("https://example.com"),
 			new SimpleShop("shop1", "http://localhost", "test"),
 		);
-		expect(hooks.publish("onAuthorize", mockEvent)).resolves.toBeUndefined();
+		await expect(
+			hooks.publish("onAuthorize", mockEvent),
+		).resolves.toBeUndefined();
 	});
 
 	test("should await promises returned by listeners", async () => {
@@ -64,7 +67,9 @@ describe("Hooks", () => {
 		);
 		const publishPromise = hooks.publish("onAuthorize", mockEvent);
 
-		expect(hooks.publish("onAuthorize", mockEvent)).resolves.toBeUndefined();
+		await expect(
+			hooks.publish("onAuthorize", mockEvent),
+		).resolves.toBeUndefined();
 		expect(mockCallback).toHaveBeenCalledWith(mockEvent);
 	});
 });

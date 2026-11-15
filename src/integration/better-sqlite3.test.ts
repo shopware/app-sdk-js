@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { SimpleShop } from "../repository.js";
 import { BetterSqlite3Repository } from "./better-sqlite3.js";
 
@@ -24,11 +25,11 @@ describe("Better Sqlite3", async () => {
 
 		await repo.deleteShop("test");
 
-		expect(repo.getShopById("test")).resolves.toBeNull();
+		await expect(repo.getShopById("test")).resolves.toBeNull();
 
 		await repo.createShop("test", "test", "test");
 
-		expect(repo.getShopById("test")).resolves.not.toBeNull();
+		await expect(repo.getShopById("test")).resolves.not.toBeNull();
 
 		await repo.updateShop(new SimpleShop("test", "foo.com", "test"));
 
@@ -38,7 +39,6 @@ describe("Better Sqlite3", async () => {
 	});
 
 	test.skip("Secret rotation fields", async () => {
-
 		const repo = new BetterSqlite3Repository(":memory:");
 
 		await repo.createShop("test", "test", "test");
@@ -49,9 +49,9 @@ describe("Better Sqlite3", async () => {
 
 		const date = new Date();
 
-		shop.setPendingShopUrl('https://pending.com');
-		shop.setPendingShopSecret('pending-secret');
-		shop.setPreviousShopSecret('previous-secret');
+		shop.setPendingShopUrl("https://pending.com");
+		shop.setPendingShopSecret("pending-secret");
+		shop.setPreviousShopSecret("previous-secret");
 		shop.setSecretsRotatedAt(date);
 
 		await repo.updateShop(shop);
@@ -59,14 +59,13 @@ describe("Better Sqlite3", async () => {
 
 		expect(updatedShop).not.toBeNull();
 
-		expect(updatedShop?.getPendingShopUrl()).toBe('https://pending.com');
-		expect(updatedShop?.getPendingShopSecret()).toBe('pending-secret');
-		expect(updatedShop?.getPreviousShopSecret()).toBe('previous-secret');
+		expect(updatedShop?.getPendingShopUrl()).toBe("https://pending.com");
+		expect(updatedShop?.getPendingShopSecret()).toBe("pending-secret");
+		expect(updatedShop?.getPreviousShopSecret()).toBe("previous-secret");
 		expect(updatedShop?.getSecretsRotatedAt()?.getTime()).toBe(date.getTime());
 	});
 
 	test.skip("Has verified with double signature", async () => {
-
 		const repo = new BetterSqlite3Repository(":memory:");
 
 		await repo.createShop("test", "test", "test");

@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { WebCryptoHmacSigner } from "../src/signer.js";
 
 describe("Signer", () => {
@@ -31,7 +32,7 @@ describe("Signer", () => {
 	test("verifyGetRequest", async () => {
 		const signer = new WebCryptoHmacSigner();
 
-		expect(
+		await expect(
 			signer.verifyGetRequest(
 				new Request(
 					"https://example.com/?shopware-shop-signature=52589bd80ccfa4acbb3f9512dfaf4f700fa5195008aae0b77a9e47dcca75beac",
@@ -41,7 +42,7 @@ describe("Signer", () => {
 		).rejects.toThrowError(
 			"Missing query parameters to verify the GET request",
 		);
-		expect(
+		await expect(
 			signer.verifyGetRequest(
 				new Request(
 					"https://example.com/?shopware-shop-signature=52589bd80ccfa4acbb3f9512dfaf4f700fa5195008aae0b77a9e47dcca75beac&a=1",
@@ -50,7 +51,7 @@ describe("Signer", () => {
 			),
 		).rejects.toThrowError("Invalid signature");
 
-		expect(
+		await expect(
 			signer.verifyGetRequest(
 				new Request(
 					"https://example.com/?shopware-shop-signature=f2cb1044ac5a2cb807e1942b06433d23d66bcf7dfad1095b286203e5c1f39cb6&shop-id=blaa",

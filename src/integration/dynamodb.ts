@@ -6,6 +6,7 @@ import {
 	PutCommand,
 	UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
+
 import { type ShopRepositoryInterface, SimpleShop } from "../repository.js";
 
 export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
@@ -85,7 +86,9 @@ export class DynamoDBRepository implements ShopRepositoryInterface<SimpleShop> {
 		}
 
 		if (response.Item.secretsRotatedAt) {
-			shop.setSecretsRotatedAt(new Date(Number(response.Item.secretsRotatedAt)));
+			shop.setSecretsRotatedAt(
+				new Date(Number(response.Item.secretsRotatedAt)),
+			);
 		}
 
 		if (response.Item.verifiedWithDoubleSignature) {

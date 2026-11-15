@@ -1,7 +1,9 @@
-import { describe, expect, test, beforeEach, afterEach } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+
 import { Hono } from "hono";
-import { InMemoryShopRepository } from "../repository.js";
+
 import { AppServer } from "../app.js";
+import { InMemoryShopRepository } from "../repository.js";
 import { configureAppServer } from "./hono.js";
 
 describe("Hono", async () => {
@@ -325,7 +327,7 @@ describe("Hono", async () => {
 
 	test("buildBaseUrl with HTTPS force", async () => {
 		const originalEnv = process.env.SHOPWARE_APP_SDK_FORCE_HTTPS;
-		
+
 		// Test with force HTTPS - successful register should have HTTPS confirmation URL
 		process.env.SHOPWARE_APP_SDK_FORCE_HTTPS = "true";
 		const honoHttps = new Hono();
@@ -350,7 +352,11 @@ describe("Hono", async () => {
 
 		expect(resp.status).toBe(200);
 
-		const body = (await resp.json()) as { proof: string; secret: string; confirmation_url: string };
+		const body = (await resp.json()) as {
+			proof: string;
+			secret: string;
+			confirmation_url: string;
+		};
 
 		expect(body).toBeObject();
 		expect(body.proof).not.toBeNull();

@@ -1,0 +1,10 @@
+[fmt]
+useTabs = true
+printWidth = 80
+sortImports = true
+
+[lint.rules]
+"@typescript-eslint/no-explicit-any" = "warn"
+"@typescript-eslint/no-wrapper-object-types" = "warn"
+"@typescript-eslint/no-unsafe-function-type" = "warn"
+"@typescript-eslint/no-empty-object-type" = "warn"

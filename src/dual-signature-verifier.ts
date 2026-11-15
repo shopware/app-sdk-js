@@ -2,7 +2,8 @@ import type { ShopInterface } from "./repository.js";
 import { WebCryptoHmacSigner } from "./signer.js";
 
 const SHOPWARE_SHOP_SIGNATURE_HEADER = "shopware-shop-signature";
-const SHOPWARE_SHOP_SIGNATURE_PREVIOUS_HEADER = "shopware-shop-signature-previous";
+const SHOPWARE_SHOP_SIGNATURE_PREVIOUS_HEADER =
+	"shopware-shop-signature-previous";
 const SHOPWARE_APP_SIGNATURE_HEADER = "shopware-app-signature";
 const INFLIGHT_ALLOWANCE_MS = 60_000;
 
@@ -28,11 +29,16 @@ export class DualSignatureVerifier<Shop extends ShopInterface = ShopInterface> {
 			throw new Error("invalid-app-signature", { cause: error });
 		}
 
-		if (shop?.isRegistrationConfirmed() && this.shouldEnforceDoubleSignatureForRegister(cfg, shop, req)) {
+		if (
+			shop?.isRegistrationConfirmed() &&
+			this.shouldEnforceDoubleSignatureForRegister(cfg, shop, req)
+		) {
 			try {
 				await this.verifyRegistrationShopSignature(req, shop.getShopSecret());
 			} catch (error) {
-				throw new Error("invalid-shop-registration-signature", { cause: error });
+				throw new Error("invalid-shop-registration-signature", {
+					cause: error,
+				});
 			}
 		}
 	}
@@ -49,14 +55,24 @@ export class DualSignatureVerifier<Shop extends ShopInterface = ShopInterface> {
 			throw new Error("Signature could not be verified");
 		}
 
-		await this.verifyPostSignature(req, body, pendingSecret, SHOPWARE_SHOP_SIGNATURE_HEADER);
+		await this.verifyPostSignature(
+			req,
+			body,
+			pendingSecret,
+			SHOPWARE_SHOP_SIGNATURE_HEADER,
+		);
 
 		if (!shop.isRegistrationConfirmed()) {
 			return;
 		}
 
 		if (this.shouldEnforceDoubleSignatureForRegisterConfirm(cfg, shop, req)) {
-			await this.verifyPostSignature(req, body, shop.getShopSecret(), SHOPWARE_SHOP_SIGNATURE_PREVIOUS_HEADER);
+			await this.verifyPostSignature(
+				req,
+				body,
+				shop.getShopSecret(),
+				SHOPWARE_SHOP_SIGNATURE_PREVIOUS_HEADER,
+			);
 		}
 	}
 
@@ -66,13 +82,23 @@ export class DualSignatureVerifier<Shop extends ShopInterface = ShopInterface> {
 		shop: Shop,
 	): Promise<void> {
 		try {
-			await this.verifyPostSignature(req, body, shop.getShopSecret(), SHOPWARE_SHOP_SIGNATURE_HEADER);
+			await this.verifyPostSignature(
+				req,
+				body,
+				shop.getShopSecret(),
+				SHOPWARE_SHOP_SIGNATURE_HEADER,
+			);
 		} catch (error) {
 			await this.tryAuthenticateWithPreviousSecret(
 				shop,
 				error,
 				async (secret) => {
-					await this.verifyPostSignature(req, body, secret, SHOPWARE_SHOP_SIGNATURE_HEADER);
+					await this.verifyPostSignature(
+						req,
+						body,
+						secret,
+						SHOPWARE_SHOP_SIGNATURE_HEADER,
+					);
 				},
 			);
 		}
@@ -92,7 +118,10 @@ export class DualSignatureVerifier<Shop extends ShopInterface = ShopInterface> {
 		}
 	}
 
-	private async verifyRegistrationAppSignature(req: Request, secret: string): Promise<void> {
+	private async verifyRegistrationAppSignature(
+		req: Request,
+		secret: string,
+	): Promise<void> {
 		const signature = req.headers.get(SHOPWARE_APP_SIGNATURE_HEADER);
 
 		if (signature === null) {
@@ -107,7 +136,10 @@ export class DualSignatureVerifier<Shop extends ShopInterface = ShopInterface> {
 		}
 	}
 
-	private async verifyRegistrationShopSignature(req: Request, secret: string): Promise<void> {
+	private async verifyRegistrationShopSignature(
+		req: Request,
+		secret: string,
+	): Promise<void> {
 		const signature = req.headers.get(SHOPWARE_SHOP_SIGNATURE_HEADER);
 
 		if (signature === null) {
@@ -182,18 +214,42 @@ export class DualSignatureVerifier<Shop extends ShopInterface = ShopInterface> {
 	 * 2. If the shop is sending a double signature, then we should also verify it
 	 * 3. If the app is configured to enforce double signature, then we should force it
 	 */
-	private shouldEnforceDoubleSignature(cfg: DualSignatureConfiguration, shop: Shop, req: Request, header: string): boolean
-	{
-		return shop.hasVerifiedWithDoubleSignature() || req.headers.has(header) || cfg.enforceDoubleSignature;
+	private shouldEnforceDoubleSignature(
+		cfg: DualSignatureConfiguration,
+		shop: Shop,
+		req: Request,
+		header: string,
+	): boolean {
+		return (
+			shop.hasVerifiedWithDoubleSignature() ||
+			req.headers.has(header) ||
+			cfg.enforceDoubleSignature
+		);
 	}
 
-	private shouldEnforceDoubleSignatureForRegister(cfg: DualSignatureConfiguration, shop: Shop, req: Request): boolean
-	{
-		return this.shouldEnforceDoubleSignature(cfg, shop, req, SHOPWARE_SHOP_SIGNATURE_HEADER);
+	private shouldEnforceDoubleSignatureForRegister(
+		cfg: DualSignatureConfiguration,
+		shop: Shop,
+		req: Request,
+	): boolean {
+		return this.shouldEnforceDoubleSignature(
+			cfg,
+			shop,
+			req,
+			SHOPWARE_SHOP_SIGNATURE_HEADER,
+		);
 	}
 
-	private shouldEnforceDoubleSignatureForRegisterConfirm(cfg: DualSignatureConfiguration, shop: Shop, req: Request): boolean
-	{
-		return this.shouldEnforceDoubleSignature(cfg, shop, req, SHOPWARE_SHOP_SIGNATURE_PREVIOUS_HEADER);
+	private shouldEnforceDoubleSignatureForRegisterConfirm(
+		cfg: DualSignatureConfiguration,
+		shop: Shop,
+		req: Request,
+	): boolean {
+		return this.shouldEnforceDoubleSignature(
+			cfg,
+			shop,
+			req,
+			SHOPWARE_SHOP_SIGNATURE_PREVIOUS_HEADER,
+		);
 	}
 }

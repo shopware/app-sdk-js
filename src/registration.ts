@@ -27,8 +27,15 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 			.replace(/([^:])(\/\/+)/g, "$1/")
 			.replace(/\/+$/, "");
 
-		const beforeRegistrationEvent = new BeforeRegistrationEvent(req, shopId, shopUrl);
-		this.app.hooks.publish('onBeforeRegistrationEvent', beforeRegistrationEvent);
+		const beforeRegistrationEvent = new BeforeRegistrationEvent(
+			req,
+			shopId,
+			shopUrl,
+		);
+		this.app.hooks.publish(
+			"onBeforeRegistrationEvent",
+			beforeRegistrationEvent,
+		);
 
 		if (beforeRegistrationEvent.reason) {
 			return new InvalidRequestResponse(beforeRegistrationEvent.reason, 400);
@@ -37,7 +44,9 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 		const shop = await this.app.repository.getShopById(shopId);
 
 		try {
-			await this.app.requestVerifier.authenticateRegistrationRequest(req, {
+			await this.app.requestVerifier.authenticateRegistrationRequest(
+				req,
+				{
 					appSecret: this.app.cfg.appSecret,
 					enforceDoubleSignature: this.app.cfg.enforceDoubleSignature ?? false,
 				},
@@ -50,7 +59,11 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 		const shopSecret = randomString();
 
 		if (shop === null) {
-			await this.app.repository.createShop(shopId, sanitizedShopUrl, shopSecret);
+			await this.app.repository.createShop(
+				shopId,
+				sanitizedShopUrl,
+				shopSecret,
+			);
 			const shop = (await this.app.repository.getShopById(shopId))!;
 			shop.setPendingShopSecret(shopSecret);
 			shop.setPendingShopUrl(sanitizedShopUrl);
@@ -266,9 +279,11 @@ export class Registration<Shop extends ShopInterface = ShopInterface> {
 	/**
 	 * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
 	 */
-	private setVerifiedWithDoubleSignature(shop: Shop, req: Request): void
-	{
-		if (this.app.cfg.enforceDoubleSignature || req.headers.has('shopware-shop-signature')) {
+	private setVerifiedWithDoubleSignature(shop: Shop, req: Request): void {
+		if (
+			this.app.cfg.enforceDoubleSignature ||
+			req.headers.has("shopware-shop-signature")
+		) {
 			shop.setVerifiedWithDoubleSignature();
 		}
 	}
@@ -352,9 +367,11 @@ export class AppUninstallEvent<Shop extends ShopInterface = ShopInterface> {
 	) {}
 }
 
-export class BeforeRegistrationEvent<Shop extends ShopInterface = ShopInterface> {
+export class BeforeRegistrationEvent<
+	Shop extends ShopInterface = ShopInterface,
+> {
 	private cancellationReason: string | null = null;
-	
+
 	constructor(
 		public request: Request,
 		public shopId: string,

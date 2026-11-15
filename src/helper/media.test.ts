@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, mock, test } from "bun:test";
+
 import type { HttpClient } from "../http-client.js";
 import { SyncOperation } from "./admin-api.js";
 import {
@@ -161,7 +162,7 @@ describe("Test Media helper", () => {
 			},
 		} as unknown as HttpClient;
 
-		expect(
+		await expect(
 			uploadMediaFile(client, {
 				file: new Blob(["test"], { type: "text/plain" }),
 				fileName: "test",
@@ -187,7 +188,7 @@ describe("Test Media helper", () => {
 			},
 		} as unknown as HttpClient;
 
-		expect(
+		await expect(
 			uploadMediaFile(client, {
 				file: new Blob(["test"], { type: "text/plain" }),
 				fileName: "test.text",

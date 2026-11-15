@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { SimpleShop } from "../repository.js";
 import { DenoKVRepository } from "./deno-kv.js";
 
@@ -54,11 +55,11 @@ describe("Deno", async () => {
 
 		await repo.deleteShop("test");
 
-		expect(repo.getShopById("test")).resolves.toBeNull();
+		await expect(repo.getShopById("test")).resolves.toBeNull();
 
 		await repo.updateShop(new SimpleShop("test", "test", "test"));
 
-		expect(repo.getShopById("test")).resolves.not.toBeNull();
+		await expect(repo.getShopById("test")).resolves.not.toBeNull();
 	});
 
 	test("Secret rotation fields", async () => {
@@ -70,12 +71,11 @@ describe("Deno", async () => {
 		expect(shop).not.toBeNull();
 		shop = shop!;
 
-
 		const date = new Date();
 
-		shop.setPendingShopUrl('https://pending.com');
-		shop.setPendingShopSecret('pending-secret');
-		shop.setPreviousShopSecret('previous-secret');
+		shop.setPendingShopUrl("https://pending.com");
+		shop.setPendingShopSecret("pending-secret");
+		shop.setPreviousShopSecret("previous-secret");
 		shop.setSecretsRotatedAt(date);
 
 		await repo.updateShop(shop);
@@ -83,9 +83,9 @@ describe("Deno", async () => {
 		expect(updatedShop).not.toBeNull();
 		updatedShop = updatedShop!;
 
-		expect(updatedShop.getPendingShopUrl()).toBe('https://pending.com');
-		expect(updatedShop.getPendingShopSecret()).toBe('pending-secret');
-		expect(updatedShop.getPreviousShopSecret()).toBe('previous-secret');
+		expect(updatedShop.getPendingShopUrl()).toBe("https://pending.com");
+		expect(updatedShop.getPendingShopSecret()).toBe("pending-secret");
+		expect(updatedShop.getPreviousShopSecret()).toBe("previous-secret");
 		expect(updatedShop.getSecretsRotatedAt()?.getTime()).toBe(date.getTime());
 	});
 

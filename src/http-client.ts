@@ -4,8 +4,11 @@ import type { ShopInterface } from "./repository.js";
  * HttpClient is a simple wrapper around the fetch API, pre-configured with the shop's URL and access token
  */
 export class HttpClient {
-	constructor(private shop: ShopInterface, private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache(), private defaultTimeout: number = 0) {
-	}
+	constructor(
+		private shop: ShopInterface,
+		private tokenCache: HttpClientTokenCacheInterface = new InMemoryHttpClientTokenCache(),
+		private defaultTimeout: number = 0,
+	) {}
 
 	/**
 	 * Permform a GET request
@@ -57,7 +60,13 @@ export class HttpClient {
 		headers["content-type"] = "application/json";
 		headers.accept = "application/json";
 
-		return await this.request("PUT", url, JSON.stringify(json), headers, options);
+		return await this.request(
+			"PUT",
+			url,
+			JSON.stringify(json),
+			headers,
+			options,
+		);
 	}
 
 	/**
@@ -72,7 +81,13 @@ export class HttpClient {
 		headers["content-type"] = "application/json";
 		headers.accept = "application/json";
 
-		return await this.request("PATCH", url, JSON.stringify(json), headers, options);
+		return await this.request(
+			"PATCH",
+			url,
+			JSON.stringify(json),
+			headers,
+			options,
+		);
 	}
 
 	/**
@@ -87,11 +102,17 @@ export class HttpClient {
 		headers["content-type"] = "application/json";
 		headers.accept = "application/json";
 
-		return await this.request("DELETE", url, JSON.stringify(json), headers, options);
+		return await this.request(
+			"DELETE",
+			url,
+			JSON.stringify(json),
+			headers,
+			options,
+		);
 	}
 
 	private getUrl(...parts: string[]): string {
-		return parts.map(part => part.replace(/^\/+|\/+$/g, "")).join("/");
+		return parts.map((part) => part.replace(/^\/+|\/+$/g, "")).join("/");
 	}
 
 	private async request<ResponseType>(
@@ -101,7 +122,7 @@ export class HttpClient {
 		headers: Record<string, string> = {},
 		options: { timeout?: number } = {},
 	): Promise<HttpClientResponse<ResponseType>> {
-		let signal : AbortSignal | null = null;
+		let signal: AbortSignal | null = null;
 
 		let timeout = options.timeout || this.defaultTimeout;
 
@@ -109,18 +130,21 @@ export class HttpClient {
 			signal = AbortSignal.timeout(timeout);
 		}
 
-		const f = await globalThis.fetch(this.getUrl(this.shop.getShopUrl(), "/api", url), {
-			redirect: "manual",
-			body,
-			headers: Object.assign(
-				{
-					Authorization: `Bearer ${await this.getToken()}`,
-				},
-				headers,
-			),
-			method,
-			signal
-		});
+		const f = await globalThis.fetch(
+			this.getUrl(this.shop.getShopUrl(), "/api", url),
+			{
+				redirect: "manual",
+				body,
+				headers: Object.assign(
+					{
+						Authorization: `Bearer ${await this.getToken()}`,
+					},
+					headers,
+				),
+				method,
+				signal,
+			},
+		);
 
 		if (f.status === 301 || f.status === 302) {
 			throw new ApiClientRequestFailed(
@@ -152,7 +176,11 @@ export class HttpClient {
 		if (!f.ok) {
 			throw new ApiClientRequestFailed(
 				this.shop.getShopId(),
-				new HttpClientResponse(f.status, await safeParseJson<ShopwareErrorResponse>(f), f.headers),
+				new HttpClientResponse(
+					f.status,
+					await safeParseJson<ShopwareErrorResponse>(f),
+					f.headers,
+				),
 			);
 		}
 
@@ -231,10 +259,17 @@ export class HttpClient {
 				expires_in: number;
 			}>(auth);
 
-			if (typeof authBody.access_token !== "string" || typeof authBody.expires_in !== "number") {
+			if (
+				typeof authBody.access_token !== "string" ||
+				typeof authBody.expires_in !== "number"
+			) {
 				throw new ApiClientAuthenticationFailed(
 					this.shop.getShopId(),
-					new HttpClientResponse(auth.status, JSON.stringify(authBody), auth.headers),
+					new HttpClientResponse(
+						auth.status,
+						JSON.stringify(authBody),
+						auth.headers,
+					),
 				);
 			}
 
@@ -303,10 +338,13 @@ export class ApiClientRequestFailed extends Error {
 		shopId: string,
 		public response: HttpClientResponse<Partial<ShopwareErrorResponse>>,
 	) {
-		const errors = Array.isArray(response.body?.errors) ? response.body.errors : [];
-		const message = errors.length > 0
-			? errors.map((e) => e.detail).join(", ")
-			: `unexpected response with HTTP status ${response.statusCode}`;
+		const errors = Array.isArray(response.body?.errors)
+			? response.body.errors
+			: [];
+		const message =
+			errors.length > 0
+				? errors.map((e) => e.detail).join(", ")
+				: `unexpected response with HTTP status ${response.statusCode}`;
 
 		super(`Request failed with error: ${message} for shop with id: ${shopId}`);
 	}
@@ -316,7 +354,9 @@ export class ApiClientRequestFailed extends Error {
  * Parses a response body as JSON, falling back to an empty object when the
  * body is missing or isn't valid JSON.
  */
-async function safeParseJson<T extends object>(response: Response): Promise<Partial<T>> {
+async function safeParseJson<T extends object>(
+	response: Response,
+): Promise<Partial<T>> {
 	try {
 		return await response.json();
 	} catch {

@@ -1,15 +1,16 @@
 /// <reference types="@cloudflare/workers-types" />
+import type {
+	HttpClientTokenCacheInterface,
+	HttpClientTokenCacheItem,
+} from "../http-client.js";
 import { SimpleShop } from "../repository.js";
 import type { ShopRepositoryInterface } from "../repository.js";
-import type { HttpClientTokenCacheInterface, HttpClientTokenCacheItem } from "../http-client.js";
 
 /**
  * Cloudflare KV integration
  * @module
  */
-export class CloudflareShopRepository
-	implements ShopRepositoryInterface<SimpleShop>
-{
+export class CloudflareShopRepository implements ShopRepositoryInterface<SimpleShop> {
 	constructor(private storage: KVNamespace) {
 		this.storage = storage;
 	}
@@ -18,22 +19,22 @@ export class CloudflareShopRepository
 		await Promise.all([
 			this.storage.put(id, this.serializeShop(new SimpleShop(id, url, secret))),
 			this.storage.put(`${id}_active`, JSON.stringify(false)),
-		])
+		]);
 	}
 
 	async deleteShop(id: string): Promise<void> {
 		await Promise.all([
 			this.storage.delete(id),
 			this.storage.delete(`${id}_active`),
-			this.storage.delete(`${id}_credentials`)
-		])
+			this.storage.delete(`${id}_credentials`),
+		]);
 	}
 
 	async getShopById(id: string): Promise<SimpleShop | null> {
 		const kvValues = await Promise.all([
 			this.storage.get(id),
 			this.storage.get(`${id}_active`),
-			this.storage.get(`${id}_credentials`)
+			this.storage.get(`${id}_credentials`),
 		]);
 
 		if (kvValues[0] === null) {
@@ -46,9 +47,18 @@ export class CloudflareShopRepository
 	async updateShop(shop: SimpleShop): Promise<void> {
 		await Promise.all([
 			this.storage.put(shop.getShopId(), this.serializeShop(shop)),
-			this.storage.put(`${shop.getShopId()}_active`, JSON.stringify(shop.getShopActive())),
-			this.storage.put(`${shop.getShopId()}_credentials`, JSON.stringify({ clientId: shop.getShopClientId(), clientSecret: shop.getShopClientSecret() }))
-		])
+			this.storage.put(
+				`${shop.getShopId()}_active`,
+				JSON.stringify(shop.getShopActive()),
+			),
+			this.storage.put(
+				`${shop.getShopId()}_credentials`,
+				JSON.stringify({
+					clientId: shop.getShopClientId(),
+					clientSecret: shop.getShopClientSecret(),
+				}),
+			),
+		]);
 	}
 
 	protected serializeShop(shop: SimpleShop): string {
@@ -63,7 +73,9 @@ export class CloudflareShopRepository
 			// which the reader never matches — so without these keys neither flag survives a
 			// round-trip. Losing the double-signature flag silently disables re-registration
 			// enforcement, letting a shop be re-registered without the second signature.
-			verified_with_double_signatures: shop.hasVerifiedWithDoubleSignature() ? 1 : 0,
+			verified_with_double_signatures: shop.hasVerifiedWithDoubleSignature()
+				? 1
+				: 0,
 			registrationConfirmed: shop.isRegistrationConfirmed() ? 1 : 0,
 		});
 	}
@@ -107,7 +119,10 @@ export class CloudflareShopRepository
 
 		if (data[2] !== null) {
 			const credentials = JSON.parse(data[2]!);
-			shop.setShopCredentials(credentials.clientId || "", credentials.clientSecret || "");
+			shop.setShopCredentials(
+				credentials.clientId || "",
+				credentials.clientSecret || "",
+			);
 		}
 
 		if (obj.verified_with_double_signatures === 1) {
@@ -136,7 +151,7 @@ export class CloudflareHttpClientTokenCache implements HttpClientTokenCacheInter
 	 */
 	async getToken(shopId: string): Promise<HttpClientTokenCacheItem | null> {
 		const tokenData = await this.storage.get(`token_${shopId}`);
-		
+
 		if (tokenData === null) {
 			return null;
 		}
@@ -146,7 +161,7 @@ export class CloudflareHttpClientTokenCache implements HttpClientTokenCacheInter
 			// Convert the ISO string back to a Date object
 			return {
 				token: parsedToken.token,
-				expiresIn: new Date(parsedToken.expiresIn)
+				expiresIn: new Date(parsedToken.expiresIn),
 			};
 		} catch (error) {
 			return null;
@@ -156,13 +171,16 @@ export class CloudflareHttpClientTokenCache implements HttpClientTokenCacheInter
 	/**
 	 * Store a token in KV storage for the given shop ID
 	 */
-	async setToken(shopId: string, token: HttpClientTokenCacheItem): Promise<void> {
+	async setToken(
+		shopId: string,
+		token: HttpClientTokenCacheItem,
+	): Promise<void> {
 		// Convert the Date object to an ISO string for storage
 		const tokenData = {
 			token: token.token,
-			expiresIn: token.expiresIn.toISOString()
+			expiresIn: token.expiresIn.toISOString(),
 		};
-		
+
 		await this.storage.put(`token_${shopId}`, JSON.stringify(tokenData));
 	}
 
