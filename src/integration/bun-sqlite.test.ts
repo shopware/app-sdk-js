@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
+
 import { SimpleShop } from "../repository.js";
 import { BunSqliteRepository } from "./bun-sqlite.js";
-
 
 describe("Bun SQLite", async () => {
 	test("createShop", async () => {
@@ -25,11 +25,11 @@ describe("Bun SQLite", async () => {
 
 		await repo.deleteShop("test");
 
-		expect(repo.getShopById("test")).resolves.toBeNull();
+		await expect(repo.getShopById("test")).resolves.toBeNull();
 
 		await repo.createShop("test", "test", "test");
 
-		expect(repo.getShopById("test")).resolves.not.toBeNull();
+		await expect(repo.getShopById("test")).resolves.not.toBeNull();
 
 		await repo.updateShop(new SimpleShop("test", "foo.com", "test"));
 
@@ -39,7 +39,6 @@ describe("Bun SQLite", async () => {
 	});
 
 	test("Secret rotation fields", async () => {
-
 		const repo = new BunSqliteRepository(":memory:");
 
 		await repo.createShop("test", "test", "test");
@@ -50,9 +49,9 @@ describe("Bun SQLite", async () => {
 
 		const date = new Date();
 
-		shop.setPendingShopUrl('https://pending.com');
-		shop.setPendingShopSecret('pending-secret');
-		shop.setPreviousShopSecret('previous-secret');
+		shop.setPendingShopUrl("https://pending.com");
+		shop.setPendingShopSecret("pending-secret");
+		shop.setPreviousShopSecret("previous-secret");
 		shop.setSecretsRotatedAt(date);
 
 		await repo.updateShop(shop);
@@ -60,14 +59,13 @@ describe("Bun SQLite", async () => {
 
 		expect(updatedShop).not.toBeNull();
 
-		expect(updatedShop?.getPendingShopUrl()).toBe('https://pending.com');
-		expect(updatedShop?.getPendingShopSecret()).toBe('pending-secret');
-		expect(updatedShop?.getPreviousShopSecret()).toBe('previous-secret');
+		expect(updatedShop?.getPendingShopUrl()).toBe("https://pending.com");
+		expect(updatedShop?.getPendingShopSecret()).toBe("pending-secret");
+		expect(updatedShop?.getPreviousShopSecret()).toBe("previous-secret");
 		expect(updatedShop?.getSecretsRotatedAt()?.getTime()).toBe(date.getTime());
 	});
 
 	test("Has verified with double signature", async () => {
-
 		const repo = new BunSqliteRepository(":memory:");
 
 		await repo.createShop("test", "test", "test");

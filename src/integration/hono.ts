@@ -1,10 +1,13 @@
+import type { Context as HonoContext, Hono } from "hono";
 import { getSignedCookie, setSignedCookie } from "hono/cookie";
+
 import { AppServer } from "../app.js";
 import { Context } from "../context-resolver.js";
+import {
+	HttpClient,
+	type HttpClientTokenCacheInterface,
+} from "../http-client.js";
 import type { ShopInterface, ShopRepositoryInterface } from "../repository.js";
-
-import type { Hono, Context as HonoContext } from "hono";
-import { HttpClient, type HttpClientTokenCacheInterface } from "../http-client.js";
 
 declare module "hono" {
 	interface ContextVariableMap {
@@ -129,9 +132,8 @@ interface ParametersConfig {
 	 * The repository to fetch and store the shop data
 	 */
 	shopRepository:
-		| ShopRepositoryInterface
-		| ((c: HonoContext) => ShopRepositoryInterface);
-	
+		ShopRepositoryInterface | ((c: HonoContext) => ShopRepositoryInterface);
+
 	/**
 	 * An already constructed AppServer instance. When provided, other parameters like appName and appSecret are not required.
 	 */
@@ -140,7 +142,9 @@ interface ParametersConfig {
 	/**
 	 * The token cache to use for the HttpClient. This is used to cache the access token for the shopware shop. If you don't provide a token cache, the HttpClient will use an in-memory cache.
 	 */
-	httpClientTokenCache?: HttpClientTokenCacheInterface | ((c: HonoContext) => HttpClientTokenCacheInterface);
+	httpClientTokenCache?:
+		| HttpClientTokenCacheInterface
+		| ((c: HonoContext) => HttpClientTokenCacheInterface);
 
 	/**
 	 * A callback to setup the app server. It will be called after the app server is created and before the first request is handled
@@ -149,7 +153,7 @@ interface ParametersConfig {
 }
 
 // Create a discriminated union type using intersection types
-type MiddlewareConfig = 
+type MiddlewareConfig =
 	| (MiddlewareConfigBase & AppServerConfig)
 	| (MiddlewareConfigBase & ParametersConfig);
 
@@ -324,7 +328,14 @@ export function configureAppServer(hono: Hono, cfg: MiddlewareConfig) {
 
 			ctx.set("shop", shop);
 			// @ts-ignore
-			ctx.set("context", new Context(shop, {}, new HttpClient(shop, ctx.get('app').httpClientTokenCache)));
+			ctx.set(
+				"context",
+				new Context(
+					shop,
+					{},
+					new HttpClient(shop, ctx.get("app").httpClientTokenCache),
+				),
+			);
 
 			await next();
 		});
@@ -379,7 +390,10 @@ function buildBaseUrl(url: string): string {
 
 	let protocol = u.protocol;
 
-	if (typeof process !== "undefined" && process.env?.SHOPWARE_APP_SDK_FORCE_HTTPS) {
+	if (
+		typeof process !== "undefined" &&
+		process.env?.SHOPWARE_APP_SDK_FORCE_HTTPS
+	) {
 		protocol = "https:";
 	}
 

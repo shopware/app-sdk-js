@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { InMemoryShopRepository, SimpleShop } from "../src/repository.js";
 
 describe("Repository", async () => {
@@ -31,7 +32,7 @@ describe("Repository", async () => {
 
 		const repository = new InMemoryShopRepository();
 
-		expect(repository.getShopById("test")).resolves.toBeNull();
+		await expect(repository.getShopById("test")).resolves.toBeNull();
 
 		await repository.createShop("test", "http://example.com", "secret");
 
@@ -41,10 +42,10 @@ describe("Repository", async () => {
 
 		await repository.deleteShop("test");
 
-		expect(repository.getShopById("test")).resolves.toBeNull();
+		await expect(repository.getShopById("test")).resolves.toBeNull();
 
 		await repository.updateShop(shop);
 
-		expect(repository.getShopById("test")).resolves.toBe(shop);
+		await expect(repository.getShopById("test")).resolves.toBe(shop);
 	});
 });

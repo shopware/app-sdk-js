@@ -8,7 +8,7 @@ export {
 	ApiClientAuthenticationFailed,
 	ApiClientRequestFailed,
 	InMemoryHttpClientTokenCache,
-	HttpClientTokenCacheInterface
+	HttpClientTokenCacheInterface,
 } from "./http-client.js";
 export { DualSignatureVerifier } from "./dual-signature-verifier.js";
 export { Context } from "./context-resolver.js";

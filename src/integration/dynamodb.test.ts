@@ -1,5 +1,4 @@
 import { describe, expect, mock, test } from "bun:test";
-import { DynamoDBRepository } from "./dynamodb.js";
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import type {
@@ -7,8 +6,9 @@ import type {
 	PutCommand,
 	UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { SimpleShop } from "../repository.js";
 
+import { SimpleShop } from "../repository.js";
+import { DynamoDBRepository } from "./dynamodb.js";
 
 describe("DynamoDB", async () => {
 	test("getShopById does not exists", async () => {
@@ -28,7 +28,7 @@ describe("DynamoDB", async () => {
 
 		const repo = new DynamoDBRepository(new DynamoDBClient(), "foo");
 
-		expect(repo.getShopById("test")).resolves.toBeNull();
+		await expect(repo.getShopById("test")).resolves.toBeNull();
 	});
 
 	test("getShopById exists", async () => {
@@ -54,7 +54,7 @@ describe("DynamoDB", async () => {
 
 		const repo = new DynamoDBRepository(new DynamoDBClient(), "foo");
 
-		expect(repo.getShopById("test")).resolves.not.toBeNull();
+		await expect(repo.getShopById("test")).resolves.not.toBeNull();
 	});
 
 	test("createShop", async () => {
@@ -188,9 +188,9 @@ describe("DynamoDB", async () => {
 		const shop = new SimpleShop("test", "test", "test");
 		const date = new Date();
 
-		shop?.setPendingShopUrl('https://pending.com');
-		shop?.setPendingShopSecret('pending-secret');
-		shop?.setPreviousShopSecret('previous-secret');
+		shop?.setPendingShopUrl("https://pending.com");
+		shop?.setPendingShopSecret("pending-secret");
+		shop?.setPreviousShopSecret("previous-secret");
 		shop?.setSecretsRotatedAt(date);
 
 		await repo.updateShop(shop);
@@ -204,9 +204,9 @@ describe("DynamoDB", async () => {
 			":secret": "test",
 			":clientId": null,
 			":clientSecret": null,
-			":pendingShopUrl": 'https://pending.com',
-			":pendingShopSecret": 'pending-secret',
-			":previousShopSecret": 'previous-secret',
+			":pendingShopUrl": "https://pending.com",
+			":pendingShopSecret": "pending-secret",
+			":previousShopSecret": "previous-secret",
 			":secretsRotatedAt": date.getTime(),
 			":verifiedWithDoubleSignature": false,
 			":registrationConfirmed": false,

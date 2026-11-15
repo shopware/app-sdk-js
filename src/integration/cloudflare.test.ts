@@ -1,9 +1,12 @@
 //
 import { describe, expect, test } from "bun:test";
-import { CloudflareShopRepository, CloudflareHttpClientTokenCache } from "../../src/integration/cloudflare-kv.js";
-import { SimpleShop } from "../../src/repository.js";
-import type { HttpClientTokenCacheItem } from "../../src/http-client.js";
 
+import type { HttpClientTokenCacheItem } from "../../src/http-client.js";
+import {
+	CloudflareHttpClientTokenCache,
+	CloudflareShopRepository,
+} from "../../src/integration/cloudflare-kv.js";
+import { SimpleShop } from "../../src/repository.js";
 
 describe("Cloudflare", async () => {
 	test("createShop", async () => {
@@ -28,11 +31,11 @@ describe("Cloudflare", async () => {
 
 		await repo.deleteShop("test");
 
-		expect(repo.getShopById("test")).resolves.toBeNull();
+		await expect(repo.getShopById("test")).resolves.toBeNull();
 
 		await repo.updateShop(new SimpleShop("test", "test", "test"));
 
-		expect(repo.getShopById("test")).resolves.not.toBeNull();
+		await expect(repo.getShopById("test")).resolves.not.toBeNull();
 	});
 
 	test("createShop sets shop as inactive by default", async () => {
@@ -54,7 +57,11 @@ describe("Cloudflare", async () => {
 
 		await repo.createShop("update-test", "https://test.com", "secret");
 
-		const shop = new SimpleShop("update-test", "https://updated.com", "updated-secret");
+		const shop = new SimpleShop(
+			"update-test",
+			"https://updated.com",
+			"updated-secret",
+		);
 		shop.setShopCredentials("client123", "secret456");
 		shop.setShopActive(true);
 
@@ -139,14 +146,17 @@ describe("Cloudflare", async () => {
 		// Create shop with initial credentials
 		const shop = new SimpleShop("override-test", "https://test.com", "secret");
 		shop.setShopCredentials("old-client", "old-secret");
-		
+
 		await kv.put("override-test", JSON.stringify(shop));
-		
+
 		// Set different credentials in separate key
-		await kv.put("override-test_credentials", JSON.stringify({
-			clientId: "new-client",
-			clientSecret: "new-secret"
-		}));
+		await kv.put(
+			"override-test_credentials",
+			JSON.stringify({
+				clientId: "new-client",
+				clientSecret: "new-secret",
+			}),
+		);
 
 		const retrieved = await repo.getShopById("override-test");
 
@@ -160,11 +170,15 @@ describe("Cloudflare", async () => {
 		const repo = new CloudflareShopRepository(kv as unknown as KVNamespace);
 
 		// Create shop with active = true in main data
-		const shop = new SimpleShop("active-override-test", "https://test.com", "secret");
+		const shop = new SimpleShop(
+			"active-override-test",
+			"https://test.com",
+			"secret",
+		);
 		shop.setShopActive(true);
-		
+
 		await kv.put("active-override-test", JSON.stringify(shop));
-		
+
 		// Set different active state in separate key
 		await kv.put("active-override-test_active", JSON.stringify(false));
 
@@ -187,9 +201,9 @@ describe("Cloudflare", async () => {
 
 		const date = new Date();
 
-		shop.setPendingShopUrl('https://pending.com');
-		shop.setPendingShopSecret('pending-secret');
-		shop.setPreviousShopSecret('previous-secret');
+		shop.setPendingShopUrl("https://pending.com");
+		shop.setPendingShopSecret("pending-secret");
+		shop.setPreviousShopSecret("previous-secret");
 		shop.setSecretsRotatedAt(date);
 
 		await repo.updateShop(shop);
@@ -198,9 +212,9 @@ describe("Cloudflare", async () => {
 		expect(updatedShop).not.toBeNull();
 		updatedShop = updatedShop!;
 
-		expect(updatedShop.getPendingShopUrl()).toBe('https://pending.com');
-		expect(updatedShop.getPendingShopSecret()).toBe('pending-secret');
-		expect(updatedShop.getPreviousShopSecret()).toBe('previous-secret');
+		expect(updatedShop.getPendingShopUrl()).toBe("https://pending.com");
+		expect(updatedShop.getPendingShopSecret()).toBe("pending-secret");
+		expect(updatedShop.getPreviousShopSecret()).toBe("previous-secret");
 		expect(updatedShop.getSecretsRotatedAt()?.getTime()).toBe(date.getTime());
 	});
 
@@ -234,12 +248,14 @@ describe("Cloudflare", async () => {
 	describe("CloudflareHttpClientTokenCache", async () => {
 		test("setToken stores token correctly", async () => {
 			const kv = new MockedKVNamespace();
-			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+			const tokenCache = new CloudflareHttpClientTokenCache(
+				kv as unknown as KVNamespace,
+			);
 
 			const expiresIn = new Date(Date.now() + 3600 * 1000); // 1 hour from now
 			const tokenItem: HttpClientTokenCacheItem = {
 				token: "test-token-123",
-				expiresIn: expiresIn
+				expiresIn: expiresIn,
 			};
 
 			await tokenCache.setToken("test-shop", tokenItem);
@@ -254,12 +270,14 @@ describe("Cloudflare", async () => {
 
 		test("getToken retrieves token correctly", async () => {
 			const kv = new MockedKVNamespace();
-			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+			const tokenCache = new CloudflareHttpClientTokenCache(
+				kv as unknown as KVNamespace,
+			);
 
 			const expiresIn = new Date(Date.now() + 3600 * 1000);
 			const tokenData = {
 				token: "test-token-456",
-				expiresIn: expiresIn.toISOString()
+				expiresIn: expiresIn.toISOString(),
 			};
 
 			await kv.put("token_test-shop", JSON.stringify(tokenData));
@@ -272,7 +290,9 @@ describe("Cloudflare", async () => {
 
 		test("getToken returns null for non-existent token", async () => {
 			const kv = new MockedKVNamespace();
-			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+			const tokenCache = new CloudflareHttpClientTokenCache(
+				kv as unknown as KVNamespace,
+			);
 
 			const retrievedToken = await tokenCache.getToken("non-existent-shop");
 			expect(retrievedToken).toBeNull();
@@ -280,7 +300,9 @@ describe("Cloudflare", async () => {
 
 		test("getToken handles parsing errors gracefully", async () => {
 			const kv = new MockedKVNamespace();
-			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+			const tokenCache = new CloudflareHttpClientTokenCache(
+				kv as unknown as KVNamespace,
+			);
 
 			// Store invalid JSON data
 			await kv.put("token_bad-shop", "invalid-json-data");
@@ -291,12 +313,14 @@ describe("Cloudflare", async () => {
 
 		test("clearToken removes token from storage", async () => {
 			const kv = new MockedKVNamespace();
-			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+			const tokenCache = new CloudflareHttpClientTokenCache(
+				kv as unknown as KVNamespace,
+			);
 
 			const expiresIn = new Date(Date.now() + 3600 * 1000);
 			const tokenData = {
 				token: "test-token-789",
-				expiresIn: expiresIn.toISOString()
+				expiresIn: expiresIn.toISOString(),
 			};
 
 			await kv.put("token_remove-test", JSON.stringify(tokenData));
@@ -312,12 +336,14 @@ describe("Cloudflare", async () => {
 
 		test("token key format uses correct prefix", async () => {
 			const kv = new MockedKVNamespace();
-			const tokenCache = new CloudflareHttpClientTokenCache(kv as unknown as KVNamespace);
+			const tokenCache = new CloudflareHttpClientTokenCache(
+				kv as unknown as KVNamespace,
+			);
 
 			const expiresIn = new Date(Date.now() + 3600 * 1000);
 			const tokenItem: HttpClientTokenCacheItem = {
 				token: "test-token",
-				expiresIn: expiresIn
+				expiresIn: expiresIn,
 			};
 
 			await tokenCache.setToken("shop123", tokenItem);

@@ -1,5 +1,8 @@
 import type { AppServer } from "./app.js";
-import { HttpClient, type HttpClientTokenCacheInterface } from "./http-client.js";
+import {
+	HttpClient,
+	type HttpClientTokenCacheInterface,
+} from "./http-client.js";
 import type { ShopInterface } from "./repository.js";
 
 /**
@@ -7,7 +10,10 @@ import type { ShopInterface } from "./repository.js";
  * The context contains the shop, the payload and an instance of the HttpClient
  */
 export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
-	constructor(private app: AppServer<Shop>, private httpClientTokenCache: HttpClientTokenCacheInterface) {}
+	constructor(
+		private app: AppServer<Shop>,
+		private httpClientTokenCache: HttpClientTokenCacheInterface,
+	) {}
 
 	/**
 	 * Create a context from a request body
@@ -33,7 +39,11 @@ export class ContextResolver<Shop extends ShopInterface = ShopInterface> {
 			throw new Error(`Cannot find shop by id ${webHookBody.source.shopId}`);
 		}
 
-		await this.app.requestVerifier.authenticatePostRequest(req, webHookContent, shop);
+		await this.app.requestVerifier.authenticatePostRequest(
+			req,
+			webHookContent,
+			shop,
+		);
 
 		return new Context<Shop, Payload>(
 			shop as Shop,

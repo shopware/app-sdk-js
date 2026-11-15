@@ -1,10 +1,8 @@
-import { type ShopRepositoryInterface, SimpleShop } from "../repository.js";
-
 import { Database } from "bun:sqlite";
 
-export class BunSqliteRepository
-	implements ShopRepositoryInterface<SimpleShop>
-{
+import { type ShopRepositoryInterface, SimpleShop } from "../repository.js";
+
+export class BunSqliteRepository implements ShopRepositoryInterface<SimpleShop> {
 	db: Database;
 	constructor(fileName: string) {
 		this.db = new Database(fileName);

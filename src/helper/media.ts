@@ -132,7 +132,6 @@ export async function uploadMediaByUrl(
 	return mediaId;
 }
 
-
 /**
  * Retrieves the default media folder ID for a given entity.
  *

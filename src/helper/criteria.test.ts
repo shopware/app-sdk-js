@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+
 import { Criteria, TotalCountMode } from "./criteria.js";
 
 describe("Test Criteria class", () => {

@@ -4,8 +4,8 @@ import type {
 	AppInstallEvent,
 	AppUninstallEvent,
 	AppUpdateEvent,
-	ShopAuthorizeEvent,
 	BeforeRegistrationEvent,
+	ShopAuthorizeEvent,
 } from "./registration.js";
 import type { ShopInterface } from "./repository.js";
 

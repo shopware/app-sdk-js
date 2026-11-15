@@ -1,6 +1,5 @@
 import type { HttpClient } from "../http-client.js";
-import type { Criteria } from "./criteria.js";
-import type { SingleFilter } from "./criteria.js";
+import type { Criteria, SingleFilter } from "./criteria.js";
 
 export class ApiContext {
 	private languageId: string | null;

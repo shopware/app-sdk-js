@@ -26,15 +26,15 @@ export interface ShopInterface {
 	isRegistrationConfirmed(): boolean;
 	setRegistrationConfirmed(): void;
 
-    /**
-     * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
-     */
-    setVerifiedWithDoubleSignature(): void;
+	/**
+	 * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
+	 */
+	setVerifiedWithDoubleSignature(): void;
 
-    /**
-     * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
-     */
-    hasVerifiedWithDoubleSignature(): boolean;
+	/**
+	 * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
+	 */
+	hasVerifiedWithDoubleSignature(): boolean;
 }
 
 /**
@@ -68,9 +68,9 @@ export class SimpleShop implements ShopInterface {
 	private shopClientSecret: string | null;
 	private shopActive = false;
 	private registrationConfirmed: boolean;
-    /**
-     * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
-     */
+	/**
+	 * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
+	 */
 	private verifiedWithDoubleSignature: boolean;
 
 	constructor(
@@ -88,7 +88,7 @@ export class SimpleShop implements ShopInterface {
 		this.secretsRotatedAt = null;
 		this.shopClientId = null;
 		this.shopClientSecret = null;
-        this.verifiedWithDoubleSignature = false;
+		this.verifiedWithDoubleSignature = false;
 		this.registrationConfirmed = registrationConfirmed;
 	}
 
@@ -153,26 +153,24 @@ export class SimpleShop implements ShopInterface {
 	setRegistrationConfirmed(): void {
 		this.registrationConfirmed = true;
 	}
-    /**
-     * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
-     */
-    setVerifiedWithDoubleSignature(): void {
-        this.verifiedWithDoubleSignature = true;
-    }
-    /**
-     * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
-     */
-    hasVerifiedWithDoubleSignature(): boolean {
-        return this.verifiedWithDoubleSignature;
-    }
+	/**
+	 * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
+	 */
+	setVerifiedWithDoubleSignature(): void {
+		this.verifiedWithDoubleSignature = true;
+	}
+	/**
+	 * @deprecated tag:v6.0.0 - Will be removed. Double signature verification will always be enforced.
+	 */
+	hasVerifiedWithDoubleSignature(): boolean {
+		return this.verifiedWithDoubleSignature;
+	}
 }
 
 /**
  * InMemoryShopRepository is a simple implementation of the ShopRepositoryInterface, it stores the shop data in memory
  */
-export class InMemoryShopRepository
-	implements ShopRepositoryInterface<SimpleShop>
-{
+export class InMemoryShopRepository implements ShopRepositoryInterface<SimpleShop> {
 	private storage: Map<string, SimpleShop>;
 
 	constructor() {
